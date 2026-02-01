@@ -1,46 +1,17 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs, limit, query } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { Award, Code, Bug } from 'lucide-react';
-import { motion, useInView } from 'framer-motion';
+import { CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Card from '../components/Card';
 import { pageVariants, staggerContainer, staggerItem, buttonVariants } from '../utils/animations';
-
-// Counter animation hook
-const useCounter = (end, duration = 2, shouldStart = false) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!shouldStart) return;
-
-    let startTime;
-    let animationFrame;
-
-    const animate = (timestamp) => {
-      if (!startTime) startTime = timestamp;
-      const progress = (timestamp - startTime) / (duration * 1000);
-
-      if (progress < 1) {
-        setCount(Math.floor(end * progress));
-        animationFrame = requestAnimationFrame(animate);
-      } else {
-        setCount(end);
-      }
-    };
-
-    animationFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [end, duration, shouldStart]);
-
-  return count;
-};
+import profilePhoto from '../assets/images/Gemini_Generated_Image_qv8a9oqv8a9oqv8a.png';
+import heroBanner from '../assets/images/WhatsApp Image 2026-02-01 at 19.36.26.jpeg';
 
 export default function Home() {
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const statsRef = useRef(null);
-  const isStatsInView = useInView(statsRef, { once: true, margin: "-100px" });
 
   useEffect(() => {
     fetchFeaturedProjects();
@@ -62,18 +33,13 @@ export default function Home() {
     }
   };
 
-  const stats = [
-    { icon: Award, value: 2, suffix: '+', label: 'Years Experience', color: 'text-blue-600' },
-    { icon: Code, value: 10, suffix: '+', label: 'Projects Tested', color: 'text-blue-600' },
-    { icon: Bug, value: 500, suffix: '+', label: 'Bugs Found', color: 'text-blue-600' },
+  const highlights = [
+    "2+ years of experience in QA Engineering",
+    "Expert in manual and automation testing",
+    "Proficient with Cypress, Playwright, and Appium",
+    "Strong background in API and performance testing",
+    "Passionate about delivering quality software"
   ];
-
-  // Counter values
-  const yearsCount = useCounter(2, 1.5, isStatsInView);
-  const projectsCount = useCounter(10, 2, isStatsInView);
-  const bugsCount = useCounter(500, 2.5, isStatsInView);
-
-  const counterValues = [yearsCount, projectsCount, bugsCount];
 
   return (
     <motion.div
@@ -83,119 +49,301 @@ export default function Home() {
       animate="animate"
       exit="exit"
     >
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <motion.h1
-              className="text-5xl md:text-6xl font-bold mb-4"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.43, 0.13, 0.23, 0.96] }}
-            >
-              Hi, I'm Pion as QA Engineer
-            </motion.h1>
-            <motion.p
-              className="text-xl md:text-2xl mb-8 text-blue-100 max-w-4xl mx-auto"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.43, 0.13, 0.23, 0.96] }}
-            >
-              I'm a QA Engineer with a strong background in manual and automation testing. I'm passionate about ensuring the quality of software products through structured testing methodologies and continuous improvement.
-            </motion.p>
-            <motion.div
-              className="flex justify-center gap-4 flex-wrap"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: [0.43, 0.13, 0.23, 0.96] }}
-            >
-              <Link to="/portfolio">
-                <motion.button
-                  className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold shadow-lg"
-                  variants={buttonVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  whileTap="tap"
-                >
-                  View My Portfolio
-                </motion.button>
-              </Link>
-              <Link to="/contact">
-                <motion.button
-                  className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold"
-                  variants={buttonVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  whileTap="tap"
-                >
-                  Contact Me
-                </motion.button>
-              </Link>
-            </motion.div>
+      {/* Hero Banner Section - Futuristic & Aesthetic */}
+      <section className="relative h-[500px] md:h-[600px] overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0">
+          <motion.img
+            src={heroBanner}
+            alt="Hero Banner"
+            className="w-full h-full object-cover"
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.5, ease: [0.43, 0.13, 0.23, 0.96] }}
+          />
+
+          {/* Futuristic Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-blue-800/70 to-transparent"></div>
+
+          {/* Animated Grid Pattern Overlay */}
+          <motion.div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(96, 165, 250, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(96, 165, 250, 0.3) 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px'
+            }}
+            animate={{
+              backgroundPosition: ['0px 0px', '50px 50px']
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              ease: "linear"
+            }}
+          />
+
+          {/* Glowing Orbs */}
+          <motion.div
+            className="absolute top-20 left-20 w-64 h-64 bg-blue-500/30 rounded-full blur-3xl"
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.3, 0.5, 0.3]
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.div
+            className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+            animate={{
+              scale: [1.2, 1, 1.2],
+              opacity: [0.2, 0.4, 0.2]
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 h-full flex items-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div className="max-w-3xl">
+
+              {/* Main Title */}
+              <motion.h1
+                className="text-5xl md:text-7xl font-bold mb-6 text-white leading-tight"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.43, 0.13, 0.23, 0.96] }}
+              >
+                Hi, I'm Pion.
+              </motion.h1>
+
+              {/* Subtitle */}
+              <motion.p
+                className="text-2xl md:text-3xl text-blue-100/90 font-light leading-relaxed"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4, ease: [0.43, 0.13, 0.23, 0.96] }}
+              >
+                Turning ideas into meaningful digital experiences.
+              </motion.p>
+
+            </div>
           </div>
         </div>
+
+        {/* Bottom Fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
+      {/* About Me Section */}
+      <section className="py-20 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            ref={statsRef}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true, margin: "-100px" }}
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              const counterValue = counterValues[index];
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-              return (
+            {/* Left Side - Photo with Cool Animations */}
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: -100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
+            >
+              {/* Decorative Background Elements */}
+              <motion.div
+                className="absolute -top-10 -left-10 w-72 h-72 bg-blue-100 rounded-full opacity-50 blur-3xl"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 90, 0],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              <motion.div
+                className="absolute -bottom-10 -right-10 w-72 h-72 bg-purple-100 rounded-full opacity-50 blur-3xl"
+                animate={{
+                  scale: [1.2, 1, 1.2],
+                  rotate: [90, 0, 90],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+
+              {/* Photo Container with Floating Animation */}
+              <motion.div
+                className="relative z-10"
+                animate={{
+                  y: [0, -20, 0],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
                 <motion.div
-                  key={stat.label}
-                  className="text-center"
-                  variants={staggerItem}
+                  className="relative rounded-2xl overflow-hidden shadow-2xl"
                   whileHover={{
-                    y: -10,
-                    transition: { duration: 0.3, ease: [0.43, 0.13, 0.23, 0.96] }
+                    scale: 1.05,
+                    rotate: 2,
+                    transition: { duration: 0.3 }
                   }}
                 >
+                  {/* Gradient Border Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 opacity-75 blur-sm"></div>
+
+                  {/* Photo */}
+                  <div className="relative m-1 rounded-2xl overflow-hidden">
+                    <img
+                      src={profilePhoto}
+                      alt="Arfion Rizki Diotama"
+                      className="w-full h-auto object-cover"
+                    />
+
+                    {/* Overlay Gradient on Hover */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-t from-blue-600/80 via-transparent to-transparent opacity-0"
+                      whileHover={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Floating Badge */}
+                <motion.div
+                  className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-4 border-4 border-blue-500"
+                  initial={{ scale: 0, rotate: -180 }}
+                  whileInView={{ scale: 1, rotate: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5, duration: 0.6, type: "spring" }}
+                  whileHover={{
+                    scale: 1.1,
+                    rotate: 5,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-blue-600">안녕</p>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+
+            {/* Right Side - About Me Content */}
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: [0.43, 0.13, 0.23, 0.96] }}
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+                  About Me
+                </h2>
+              </motion.div>
+
+              <motion.p
+                className="text-lg text-gray-600 mb-6 leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                Hi! I'm <span className="font-bold text-blue-600">Arfion Rizki Diotama</span>,
+                a passionate QA Engineer dedicated to ensuring software quality through
+                meticulous testing and continuous improvement.
+              </motion.p>
+
+              <motion.p
+                className="text-lg text-gray-600 mb-8 leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+              >
+                With expertise in both manual and automation testing, I bring a comprehensive
+                approach to quality assurance, combining technical skills with attention to detail
+                to deliver exceptional results.
+              </motion.p>
+
+              {/* Highlights List */}
+              <motion.div
+                className="space-y-4"
+                variants={staggerContainer}
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true }}
+              >
+                {highlights.map((highlight, index) => (
                   <motion.div
-                    className="flex justify-center mb-4"
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{
-                      delay: index * 0.2,
-                      duration: 0.6,
-                      ease: [0.43, 0.13, 0.23, 0.96]
+                    key={index}
+                    className="flex items-start gap-3"
+                    variants={staggerItem}
+                    whileHover={{
+                      x: 10,
+                      transition: { duration: 0.2 }
                     }}
                   >
-                    <Icon size={48} className={stat.color} />
+                    <motion.div
+                      initial={{ scale: 0, rotate: -180 }}
+                      whileInView={{ scale: 1, rotate: 0 }}
+                      viewport={{ once: true }}
+                      transition={{
+                        delay: 0.5 + (index * 0.1),
+                        duration: 0.4,
+                        type: "spring"
+                      }}
+                    >
+                      <CheckCircle2 className="text-blue-600 flex-shrink-0 mt-1" size={24} />
+                    </motion.div>
+                    <p className="text-gray-700 text-lg">{highlight}</p>
                   </motion.div>
-                  <motion.h3
-                    className="text-4xl font-bold text-gray-800 mb-2"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.2 + 0.2, duration: 0.4 }}
+                ))}
+              </motion.div>
+
+              {/* CTA Button */}
+              <motion.div
+                className="mt-10"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.8, duration: 0.5 }}
+              >
+                <Link to="/about">
+                  <motion.button
+                    className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-lg"
+                    variants={buttonVariants}
+                    initial="rest"
+                    whileHover="hover"
+                    whileTap="tap"
                   >
-                    {counterValue}{stat.suffix}
-                  </motion.h3>
-                  <motion.p
-                    className="text-gray-600"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.2 + 0.3, duration: 0.4 }}
-                  >
-                    {stat.label}
-                  </motion.p>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                    Learn More About Me
+                  </motion.button>
+                </Link>
+              </motion.div>
+            </motion.div>
+
+          </div>
         </div>
       </section>
 
@@ -203,7 +351,7 @@ export default function Home() {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2
-            className="text-3xl font-bold text-white mb-8 text-center"
+            className="text-3xl font-bold text-gray-800 mb-8 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -221,16 +369,16 @@ export default function Home() {
               >
                 <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full" />
               </motion.div>
-              <p className="text-gray-400 mt-4">Loading projects...</p>
+              <p className="text-gray-600 mt-4">Loading projects...</p>
             </div>
           ) : featuredProjects.length === 0 ? (
             <motion.div
-              className="text-center py-12 bg-gray-800 rounded-lg"
+              className="text-center py-12 bg-gray-100 rounded-lg"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4 }}
             >
-              <p className="text-gray-400">No projects yet. Add some from the admin dashboard!</p>
+              <p className="text-gray-600">No projects yet. Add some from the admin dashboard!</p>
             </motion.div>
           ) : (
             <motion.div

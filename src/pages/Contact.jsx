@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Linkedin, Github, Phone, MapPin, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { pageVariants, buttonVariants, modalVariants } from '../utils/animations';
+import { buttonVariants, modalVariants } from '../utils/animations';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import emailjs from '@emailjs/browser';
@@ -83,13 +83,7 @@ export default function Contact() {
   ];
 
   return (
-    <motion.div
-      className="min-h-screen bg-gray-50 py-12"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-    >
+    <div className="min-h-screen bg-gray-50 py-12 relative z-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -323,6 +317,6 @@ export default function Contact() {
           </motion.div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

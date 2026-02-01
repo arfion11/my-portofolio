@@ -12,7 +12,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signOut } from 'firebase/auth';
 import { db, storage, auth } from '../../config/firebase';
-import { Plus, Edit, Trash2, LogOut, X, Mail } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, X, Mail, Award, Upload, FileText, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   pageVariants,
@@ -31,6 +31,18 @@ export default function Dashboard() {
   const [focusedField, setFocusedField] = useState('');
   const navigate = useNavigate();
 
+  // Certificate modal state
+  const [showCertificateModal, setShowCertificateModal] = useState(false);
+  const [certificateFormData, setCertificateFormData] = useState({
+    title: '',
+    issuer: '',
+    date: '',
+    description: '',
+    file: null,
+    fileType: 'image'
+  });
+  const [uploadingCertificate, setUploadingCertificate] = useState(false);
+
   // Form state
   const [formData, setFormData] = useState({
     title: '',
@@ -38,7 +50,7 @@ export default function Dashboard() {
     description: '',
     role: '',
     tools: '',
-    category: 'manual',
+    category: 'work',
     images: []
   });
   const [imageFiles, setImageFiles] = useState([]);
@@ -119,7 +131,7 @@ export default function Dashboard() {
         description: '',
         role: '',
         tools: '',
-        category: 'manual',
+        category: 'work',
         images: []
       });
       setImageFiles([]);
@@ -160,6 +172,59 @@ export default function Dashboard() {
         console.error('Error deleting project:', error);
         alert('Gagal menghapus project.');
       }
+    }
+  };
+
+  const handleCertificateFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const fileType = file.type.includes('pdf') ? 'pdf' : 'image';
+      setCertificateFormData({ ...certificateFormData, file, fileType });
+    }
+  };
+
+  const handleCertificateSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!certificateFormData.file) {
+      alert('Please select a file');
+      return;
+    }
+
+    setUploadingCertificate(true);
+
+    try {
+      // Upload file to Firebase Storage
+      const fileRef = ref(storage, `certificates/${Date.now()}_${certificateFormData.file.name}`);
+      await uploadBytes(fileRef, certificateFormData.file);
+      const fileURL = await getDownloadURL(fileRef);
+
+      // Add certificate to Firestore
+      await addDoc(collection(db, 'certificates'), {
+        title: certificateFormData.title,
+        issuer: certificateFormData.issuer,
+        date: certificateFormData.date,
+        description: certificateFormData.description,
+        image: fileURL,
+        fileType: certificateFormData.fileType,
+        createdAt: new Date()
+      });
+
+      alert('Certificate added successfully!');
+      setShowCertificateModal(false);
+      setCertificateFormData({
+        title: '',
+        issuer: '',
+        date: '',
+        description: '',
+        file: null,
+        fileType: 'image'
+      });
+    } catch (error) {
+      console.error('Error adding certificate:', error);
+      alert('Failed to add certificate');
+    } finally {
+      setUploadingCertificate(false);
     }
   };
 
@@ -211,6 +276,32 @@ export default function Dashboard() {
               Messages
             </motion.button>
             <motion.button
+              onClick={() => navigate('/admin/journey')}
+              className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1625, duration: 0.5 }}
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Heart size={20} />
+              Journey Photos
+            </motion.button>
+            <motion.button
+              onClick={() => setShowCertificateModal(true)}
+              className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.175, duration: 0.5 }}
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Award size={20} />
+              Add Certificate
+            </motion.button>
+            <motion.button
               onClick={handleLogout}
               className="flex items-center gap-2 text-red-600 font-semibold"
               initial={{ opacity: 0, x: 20 }}
@@ -249,7 +340,7 @@ export default function Dashboard() {
                 description: '',
                 role: '',
                 tools: '',
-                category: 'manual',
+                category: 'work',
                 images: []
               });
             }}
@@ -400,8 +491,11 @@ export default function Dashboard() {
                       }}
                       transition={{ duration: 0.2 }}
                     >
+                      <option value="work">Work Project</option>
+                      <option value="internship">Internship Project</option>
+                      <option value="university">University Project</option>
                       <option value="manual">Manual Testing</option>
-                      <option value="automation">Automation</option>
+                      <option value="automation">Automation Testing</option>
                     </motion.select>
                   </motion.div>
 
@@ -548,9 +642,15 @@ export default function Dashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <motion.span
                           className={`px-2 py-1 rounded-full text-xs ${
-                            project.category === 'automation'
+                            project.category === 'work'
+                              ? 'bg-blue-100 text-blue-800'
+                              : project.category === 'internship'
                               ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
+                              : project.category === 'university'
+                              ? 'bg-orange-100 text-orange-800'
+                              : project.category === 'automation'
+                              ? 'bg-purple-100 text-purple-800'
+                              : 'bg-gray-100 text-gray-800'
                           }`}
                           whileHover={{ scale: 1.05 }}
                           transition={{ duration: 0.2 }}
@@ -588,6 +688,131 @@ export default function Dashboard() {
                   ))}
                 </motion.tbody>
               </table>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Certificate Modal */}
+        <AnimatePresence>
+          {showCertificateModal && (
+            <motion.div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+              variants={backdropVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              onClick={() => setShowCertificateModal(false)}
+            >
+              <motion.div
+                className="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                variants={modalVariants}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Add New Certificate</h2>
+                  <button
+                    onClick={() => setShowCertificateModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleCertificateSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Certificate Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={certificateFormData.title}
+                      onChange={(e) => setCertificateFormData({ ...certificateFormData, title: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Issuing Organization *
+                    </label>
+                    <input
+                      type="text"
+                      value={certificateFormData.issuer}
+                      onChange={(e) => setCertificateFormData({ ...certificateFormData, issuer: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Issue Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={certificateFormData.date}
+                      onChange={(e) => setCertificateFormData({ ...certificateFormData, date: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Description
+                    </label>
+                    <textarea
+                      value={certificateFormData.description}
+                      onChange={(e) => setCertificateFormData({ ...certificateFormData, description: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      rows="3"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Certificate File (Image or PDF) *
+                    </label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={handleCertificateFileChange}
+                        className="hidden"
+                        id="certificate-file-input"
+                        required
+                      />
+                      <label htmlFor="certificate-file-input" className="cursor-pointer">
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-600">
+                          {certificateFormData.file ? certificateFormData.file.name : 'Click to upload image or PDF'}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Supported: JPG, PNG, PDF
+                        </p>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 pt-4">
+                    <button
+                      type="submit"
+                      disabled={uploadingCertificate}
+                      className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploadingCertificate ? 'Uploading...' : 'Add Certificate'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCertificateModal(false)}
+                      className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
