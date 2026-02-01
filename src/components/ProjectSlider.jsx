@@ -79,13 +79,15 @@ export default function ProjectSlider({ title, projects, category, icon: Icon })
             {/* Slider Container */}
             <div className="relative group">
                 {/* Left Arrow Button */}
-                <motion.button
-                    onClick={() => scroll('left')}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:shadow-xl"
-                    whileTap={{ scale: 0.95 }}
-                >
-                    <ChevronLeft className="w-6 h-6 text-gray-800" />
-                </motion.button>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <motion.button
+                        onClick={() => scroll('left')}
+                        className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl"
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <ChevronLeft className="w-6 h-6 text-gray-800" />
+                    </motion.button>
+                </div>
 
                 {/* Projects Slider */}
                 <div
@@ -107,13 +109,15 @@ export default function ProjectSlider({ title, projects, category, icon: Icon })
                 </div>
 
                 {/* Right Arrow Button */}
-                <motion.button
-                    onClick={() => scroll('right')}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:shadow-xl"
-                    whileTap={{ scale: 0.95 }}
-                >
-                    <ChevronRight className="w-6 h-6 text-gray-800" />
-                </motion.button>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <motion.button
+                        onClick={() => scroll('right')}
+                        className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl"
+                        whileTap={{ scale: 0.95 }}
+                    >
+                        <ChevronRight className="w-6 h-6 text-gray-800" />
+                    </motion.button>
+                </div>
             </div>
         </div>
     );

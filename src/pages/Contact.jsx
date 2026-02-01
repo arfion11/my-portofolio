@@ -94,7 +94,7 @@ export default function Contact() {
         >
           <h1 className="text-4xl font-bold text-gray-800 mb-4">Get In Touch</h1>
           <p className="text-xl text-gray-600">
-            Let's discuss your QA needs or opportunities
+            Let's discuss your needs or opportunities
           </p>
         </motion.div>
 
