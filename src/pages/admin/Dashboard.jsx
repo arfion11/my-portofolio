@@ -1,24 +1,34 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  collection, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
   doc,
-  serverTimestamp 
+  serverTimestamp
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signOut } from 'firebase/auth';
 import { db, storage, auth } from '../../config/firebase';
-import { Plus, Edit, Trash2, LogOut, X } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, X, Mail } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  pageVariants,
+  buttonVariants,
+  modalVariants,
+  backdropVariants,
+  staggerContainer,
+  staggerItem
+} from '../../utils/animations';
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [focusedField, setFocusedField] = useState('');
   const navigate = useNavigate();
 
   // Form state
@@ -163,26 +173,73 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div
+      className="min-h-screen bg-gray-50"
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       {/* Header */}
-      <div className="bg-white shadow-md">
+      <motion.div
+        className="bg-white shadow-md"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-red-600 hover:text-red-700"
+          <motion.h1
+            className="text-2xl font-bold text-gray-800"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <LogOut size={20} />
-            Logout
-          </button>
+            Admin Dashboard
+          </motion.h1>
+          <div className="flex gap-3">
+            <motion.button
+              onClick={() => navigate('/admin/messages')}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15, duration: 0.5 }}
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Mail size={20} />
+              Messages
+            </motion.button>
+            <motion.button
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-red-600 font-semibold"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              whileHover={{
+                scale: 1.05,
+                color: '#dc2626',
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <LogOut size={20} />
+              Logout
+            </motion.button>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Add Button */}
-        <div className="mb-6 flex justify-between items-center">
+        <motion.div
+          className="mb-6 flex justify-between items-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
           <h2 className="text-xl font-bold text-gray-800">Manage Projects</h2>
-          <button
+          <motion.button
             onClick={() => {
               setShowForm(true);
               setEditingProject(null);
@@ -196,107 +253,159 @@ export default function Dashboard() {
                 images: []
               });
             }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
           >
             <Plus size={20} />
             Add New Project
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
 
         {/* Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold">
-                  {editingProject ? 'Edit Project' : 'Add New Project'}
-                </h3>
-                <button onClick={() => setShowForm(false)}>
-                  <X size={24} />
-                </button>
-              </div>
+        <AnimatePresence>
+          {showForm && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                variants={backdropVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                onClick={() => setShowForm(false)}
+              >
+                <motion.div
+                  className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                  variants={modalVariants}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <motion.h3
+                      className="text-2xl font-bold"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                    >
+                      {editingProject ? 'Edit Project' : 'Add New Project'}
+                    </motion.h3>
+                    <motion.button
+                      onClick={() => setShowForm(false)}
+                      whileHover={{ scale: 1.1, rotate: 90 }}
+                      whileTap={{ scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <X size={24} />
+                    </motion.button>
+                  </div>
 
               <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Project Title *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData({...formData, title: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      required
-                    />
-                  </div>
+                <motion.div
+                  className="space-y-4"
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                >
+                  {[
+                    { name: 'title', label: 'Project Title *', type: 'text', required: true },
+                    { name: 'company', label: 'Company / Client', type: 'text', required: false },
+                  ].map((field, index) => (
+                    <motion.div key={field.name} variants={staggerItem}>
+                      <label className="block text-gray-700 font-semibold mb-2">
+                        {field.label}
+                      </label>
+                      <motion.input
+                        type={field.type}
+                        value={formData[field.name]}
+                        onChange={(e) => setFormData({...formData, [field.name]: e.target.value})}
+                        onFocus={() => setFocusedField(field.name)}
+                        onBlur={() => setFocusedField('')}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                        required={field.required}
+                        animate={{
+                          scale: focusedField === field.name ? 1.02 : 1,
+                          boxShadow: focusedField === field.name
+                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                            : '0 0 0 0px rgba(59, 130, 246, 0)'
+                        }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    </motion.div>
+                  ))}
 
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Company / Client
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.company}
-                      onChange={(e) => setFormData({...formData, company: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </div>
-
-                  <div>
+                  <motion.div variants={staggerItem}>
                     <label className="block text-gray-700 font-semibold mb-2">
                       Description *
                     </label>
-                    <textarea
+                    <motion.textarea
                       value={formData.description}
                       onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onFocus={() => setFocusedField('description')}
+                      onBlur={() => setFocusedField('')}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
                       rows="4"
                       required
+                      animate={{
+                        scale: focusedField === 'description' ? 1.02 : 1,
+                        boxShadow: focusedField === 'description'
+                          ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                          : '0 0 0 0px rgba(59, 130, 246, 0)'
+                      }}
+                      transition={{ duration: 0.2 }}
                     />
-                  </div>
+                  </motion.div>
 
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Your Role as QA
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.role}
-                      onChange={(e) => setFormData({...formData, role: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      placeholder="e.g., Manual Tester, Automation Engineer"
-                    />
-                  </div>
+                  {[
+                    { name: 'role', label: 'Your Role as QA', placeholder: 'e.g., Manual Tester, Automation Engineer' },
+                    { name: 'tools', label: 'Tools (pisahkan dengan koma)', placeholder: 'e.g., Jira, Postman, Selenium' },
+                  ].map((field) => (
+                    <motion.div key={field.name} variants={staggerItem}>
+                      <label className="block text-gray-700 font-semibold mb-2">
+                        {field.label}
+                      </label>
+                      <motion.input
+                        type="text"
+                        value={formData[field.name]}
+                        onChange={(e) => setFormData({...formData, [field.name]: e.target.value})}
+                        onFocus={() => setFocusedField(field.name)}
+                        onBlur={() => setFocusedField('')}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                        placeholder={field.placeholder}
+                        animate={{
+                          scale: focusedField === field.name ? 1.02 : 1,
+                          boxShadow: focusedField === field.name
+                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                            : '0 0 0 0px rgba(59, 130, 246, 0)'
+                        }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    </motion.div>
+                  ))}
 
-                  <div>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Tools (pisahkan dengan koma)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.tools}
-                      onChange={(e) => setFormData({...formData, tools: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                      placeholder="e.g., Jira, Postman, Selenium"
-                    />
-                  </div>
-
-                  <div>
+                  <motion.div variants={staggerItem}>
                     <label className="block text-gray-700 font-semibold mb-2">
                       Category
                     </label>
-                    <select
+                    <motion.select
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      onFocus={() => setFocusedField('category')}
+                      onBlur={() => setFocusedField('')}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                      animate={{
+                        scale: focusedField === 'category' ? 1.02 : 1,
+                        boxShadow: focusedField === 'category'
+                          ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                          : '0 0 0 0px rgba(59, 130, 246, 0)'
+                      }}
+                      transition={{ duration: 0.2 }}
                     >
                       <option value="manual">Manual Testing</option>
                       <option value="automation">Automation</option>
-                    </select>
-                  </div>
+                    </motion.select>
+                  </motion.div>
 
-                  <div>
+                  <motion.div variants={staggerItem}>
                     <label className="block text-gray-700 font-semibold mb-2">
                       Upload Images
                     </label>
@@ -310,97 +419,179 @@ export default function Dashboard() {
                     <p className="text-sm text-gray-500 mt-1">
                       Bisa pilih beberapa gambar sekaligus
                     </p>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
-                <div className="mt-6 flex gap-4">
-                  <button
+                <motion.div
+                  className="mt-6 flex gap-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                >
+                  <motion.button
                     type="submit"
                     disabled={uploading}
-                    className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400"
+                    className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400"
+                    variants={buttonVariants}
+                    whileHover={!uploading ? "hover" : undefined}
+                    whileTap={!uploading ? "tap" : undefined}
                   >
-                    {uploading ? 'Uploading...' : editingProject ? 'Update' : 'Add Project'}
-                  </button>
-                  <button
+                    {uploading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <motion.span
+                          className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                        Uploading...
+                      </span>
+                    ) : (
+                      editingProject ? 'Update' : 'Add Project'
+                    )}
+                  </motion.button>
+                  <motion.button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400"
+                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
+                    whileHover={{
+                      backgroundColor: '#d1d5db',
+                      scale: 1.02,
+                      transition: { duration: 0.2 }
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     Cancel
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               </form>
-            </div>
-          </div>
-        )}
+            </motion.div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Projects Table */}
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        ) : projects.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <p className="text-gray-600">Belum ada project. Klik "Add New Project" untuk mulai!</p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Company
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {projects.map((project) => (
-                  <tr key={project.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-medium text-gray-900">{project.title}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {project.company}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        project.category === 'automation' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {project.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <button
-                        onClick={() => handleEdit(project)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(project.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              className="text-center py-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <p className="text-gray-600 mt-4">Loading...</p>
+            </motion.div>
+          ) : projects.length === 0 ? (
+            <motion.div
+              className="bg-white rounded-lg shadow-md p-12 text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3 }}
+            >
+              <p className="text-gray-600">Belum ada project. Klik "Add New Project" untuk mulai!</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              className="bg-white rounded-lg shadow-md overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Company
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <motion.tbody
+                  className="bg-white divide-y divide-gray-200"
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                >
+                  {projects.map((project, index) => (
+                    <motion.tr
+                      key={project.id}
+                      variants={staggerItem}
+                      whileHover={{
+                        backgroundColor: '#f9fafb',
+                        y: -2,
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        transition: { duration: 0.2 }
+                      }}
+                      layout
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="font-medium text-gray-900">{project.title}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                        {project.company}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <motion.span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            project.category === 'automation'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-blue-100 text-blue-800'
+                          }`}
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {project.category}
+                        </motion.span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <motion.button
+                          onClick={() => handleEdit(project)}
+                          className="text-blue-600 mr-4 inline-block"
+                          whileHover={{
+                            scale: 1.2,
+                            color: '#1e40af',
+                            transition: { duration: 0.2 }
+                          }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <Edit size={18} />
+                        </motion.button>
+                        <motion.button
+                          onClick={() => handleDelete(project.id)}
+                          className="text-red-600 inline-block"
+                          whileHover={{
+                            scale: 1.2,
+                            color: '#991b1b',
+                            transition: { duration: 0.2 }
+                          }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <Trash2 size={18} />
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </motion.tbody>
+              </table>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
