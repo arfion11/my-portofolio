@@ -343,7 +343,7 @@ export default function About() {
               </motion.div>
               {/* Company Logo - Clickable */}
               <motion.a
-                href="https://open.noice.id"
+                href="https://www.noice.id/tentang-noice/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-shrink-0 group cursor-pointer"
@@ -400,7 +400,7 @@ export default function About() {
               </motion.div>
               {/* Company Logo - Clickable */}
               <motion.a
-                href="https://www.transtrack.co/id"
+                href="https://www.transtrack.co/id/profil-transtrack"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-shrink-0 group cursor-pointer"

@@ -136,8 +136,8 @@ export default function ProjectDetail() {
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={`flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === index
-                        ? 'border-blue-500 shadow-lg'
-                        : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 shadow-lg'
+                      : 'border-gray-200 hover:border-gray-300'
                       }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -210,25 +210,7 @@ export default function ProjectDetail() {
         </motion.div>
 
         {/* Back to Portfolio Button */}
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.5 }}
-        >
-          <motion.button
-            onClick={() => navigate('/portfolio')}
-            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl font-bold shadow-lg"
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
-              transition: { duration: 0.2 }
-            }}
-            whileTap={{ scale: 0.95 }}
-          >
-            View More Projects
-          </motion.button>
-        </motion.div>
+
       </div>
     </div>
   );
