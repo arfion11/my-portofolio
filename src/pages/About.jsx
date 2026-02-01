@@ -106,7 +106,7 @@ export default function About() {
               <img
                 src={profilePhoto}
                 alt="Profile"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
               />
             </motion.div>
 

@@ -47,7 +47,7 @@ export default function Footer() {
           {/* Quick Links */}
           <div>
             <h3 className="text-xl font-bold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <ul className="grid grid-cols-2 gap-y-2 gap-x-4 max-w-[200px]">
               {quickLinks.map((link) => (
                 <li key={link.path}>
                   <motion.a

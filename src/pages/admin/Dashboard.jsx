@@ -49,7 +49,6 @@ export default function Dashboard() {
     company: '',
     description: '',
     role: '',
-    tools: '',
     category: 'work',
     images: []
   });
@@ -82,14 +81,14 @@ export default function Dashboard() {
 
   const uploadImages = async () => {
     const imageUrls = [];
-    
+
     for (const file of imageFiles) {
       const storageRef = ref(storage, `projects/${Date.now()}_${file.name}`);
       await uploadBytes(storageRef, file);
       const url = await getDownloadURL(storageRef);
       imageUrls.push(url);
     }
-    
+
     return imageUrls;
   };
 
@@ -107,8 +106,7 @@ export default function Dashboard() {
       // Prepare data
       const projectData = {
         ...formData,
-        tools: formData.tools.split(',').map(t => t.trim()),
-        images: editingProject 
+        images: editingProject
           ? [...(editingProject.images || []), ...imageUrls]
           : imageUrls,
         createdAt: editingProject ? editingProject.createdAt : serverTimestamp()
@@ -130,14 +128,13 @@ export default function Dashboard() {
         company: '',
         description: '',
         role: '',
-        tools: '',
         category: 'work',
         images: []
       });
       setImageFiles([]);
       setShowForm(false);
       setEditingProject(null);
-      
+
       // Refresh data
       fetchProjects();
     } catch (error) {
@@ -155,7 +152,6 @@ export default function Dashboard() {
       company: project.company,
       description: project.description,
       role: project.role,
-      tools: project.tools.join(', '),
       category: project.category || 'manual',
       images: project.images || []
     });
@@ -339,7 +335,6 @@ export default function Dashboard() {
                 company: '',
                 description: '',
                 role: '',
-                tools: '',
                 category: 'work',
                 images: []
               });
@@ -390,175 +385,174 @@ export default function Dashboard() {
                     </motion.button>
                   </div>
 
-              <form onSubmit={handleSubmit}>
-                <motion.div
-                  className="space-y-4"
-                  variants={staggerContainer}
-                  initial="initial"
-                  animate="animate"
-                >
-                  {[
-                    { name: 'title', label: 'Project Title *', type: 'text', required: true },
-                    { name: 'company', label: 'Company / Client', type: 'text', required: false },
-                  ].map((field, index) => (
-                    <motion.div key={field.name} variants={staggerItem}>
-                      <label className="block text-gray-700 font-semibold mb-2">
-                        {field.label}
-                      </label>
-                      <motion.input
-                        type={field.type}
-                        value={formData[field.name]}
-                        onChange={(e) => setFormData({...formData, [field.name]: e.target.value})}
-                        onFocus={() => setFocusedField(field.name)}
-                        onBlur={() => setFocusedField('')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                        required={field.required}
-                        animate={{
-                          scale: focusedField === field.name ? 1.02 : 1,
-                          boxShadow: focusedField === field.name
-                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                            : '0 0 0 0px rgba(59, 130, 246, 0)'
-                        }}
-                        transition={{ duration: 0.2 }}
-                      />
-                    </motion.div>
-                  ))}
-
-                  <motion.div variants={staggerItem}>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Description *
-                    </label>
-                    <motion.textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      onFocus={() => setFocusedField('description')}
-                      onBlur={() => setFocusedField('')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                      rows="4"
-                      required
-                      animate={{
-                        scale: focusedField === 'description' ? 1.02 : 1,
-                        boxShadow: focusedField === 'description'
-                          ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                          : '0 0 0 0px rgba(59, 130, 246, 0)'
-                      }}
-                      transition={{ duration: 0.2 }}
-                    />
-                  </motion.div>
-
-                  {[
-                    { name: 'role', label: 'Your Role as QA', placeholder: 'e.g., Manual Tester, Automation Engineer' },
-                    { name: 'tools', label: 'Tools (pisahkan dengan koma)', placeholder: 'e.g., Jira, Postman, Selenium' },
-                  ].map((field) => (
-                    <motion.div key={field.name} variants={staggerItem}>
-                      <label className="block text-gray-700 font-semibold mb-2">
-                        {field.label}
-                      </label>
-                      <motion.input
-                        type="text"
-                        value={formData[field.name]}
-                        onChange={(e) => setFormData({...formData, [field.name]: e.target.value})}
-                        onFocus={() => setFocusedField(field.name)}
-                        onBlur={() => setFocusedField('')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                        placeholder={field.placeholder}
-                        animate={{
-                          scale: focusedField === field.name ? 1.02 : 1,
-                          boxShadow: focusedField === field.name
-                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                            : '0 0 0 0px rgba(59, 130, 246, 0)'
-                        }}
-                        transition={{ duration: 0.2 }}
-                      />
-                    </motion.div>
-                  ))}
-
-                  <motion.div variants={staggerItem}>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Category
-                    </label>
-                    <motion.select
-                      value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      onFocus={() => setFocusedField('category')}
-                      onBlur={() => setFocusedField('')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                      animate={{
-                        scale: focusedField === 'category' ? 1.02 : 1,
-                        boxShadow: focusedField === 'category'
-                          ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                          : '0 0 0 0px rgba(59, 130, 246, 0)'
-                      }}
-                      transition={{ duration: 0.2 }}
+                  <form onSubmit={handleSubmit}>
+                    <motion.div
+                      className="space-y-4"
+                      variants={staggerContainer}
+                      initial="initial"
+                      animate="animate"
                     >
-                      <option value="work">Work Project</option>
-                      <option value="internship">Internship Project</option>
-                      <option value="university">University Project</option>
-                      <option value="manual">Manual Testing</option>
-                      <option value="automation">Automation Testing</option>
-                    </motion.select>
-                  </motion.div>
+                      {[
+                        { name: 'title', label: 'Project Title *', type: 'text', required: true },
+                        { name: 'company', label: 'Company / Client', type: 'text', required: false },
+                      ].map((field, index) => (
+                        <motion.div key={field.name} variants={staggerItem}>
+                          <label className="block text-gray-700 font-semibold mb-2">
+                            {field.label}
+                          </label>
+                          <motion.input
+                            type={field.type}
+                            value={formData[field.name]}
+                            onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                            onFocus={() => setFocusedField(field.name)}
+                            onBlur={() => setFocusedField('')}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                            required={field.required}
+                            animate={{
+                              scale: focusedField === field.name ? 1.02 : 1,
+                              boxShadow: focusedField === field.name
+                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                : '0 0 0 0px rgba(59, 130, 246, 0)'
+                            }}
+                            transition={{ duration: 0.2 }}
+                          />
+                        </motion.div>
+                      ))}
 
-                  <motion.div variants={staggerItem}>
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Upload Images
-                    </label>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      Bisa pilih beberapa gambar sekaligus
-                    </p>
-                  </motion.div>
-                </motion.div>
-
-                <motion.div
-                  className="mt-6 flex gap-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.4 }}
-                >
-                  <motion.button
-                    type="submit"
-                    disabled={uploading}
-                    className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400"
-                    variants={buttonVariants}
-                    whileHover={!uploading ? "hover" : undefined}
-                    whileTap={!uploading ? "tap" : undefined}
-                  >
-                    {uploading ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <motion.span
-                          className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      <motion.div variants={staggerItem}>
+                        <label className="block text-gray-700 font-semibold mb-2">
+                          Description *
+                        </label>
+                        <motion.textarea
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                          onFocus={() => setFocusedField('description')}
+                          onBlur={() => setFocusedField('')}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                          rows="4"
+                          required
+                          animate={{
+                            scale: focusedField === 'description' ? 1.02 : 1,
+                            boxShadow: focusedField === 'description'
+                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                              : '0 0 0 0px rgba(59, 130, 246, 0)'
+                          }}
+                          transition={{ duration: 0.2 }}
                         />
-                        Uploading...
-                      </span>
-                    ) : (
-                      editingProject ? 'Update' : 'Add Project'
-                    )}
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
-                    whileHover={{
-                      backgroundColor: '#d1d5db',
-                      scale: 1.02,
-                      transition: { duration: 0.2 }
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Cancel
-                  </motion.button>
+                      </motion.div>
+
+                      {[
+                        { name: 'role', label: 'Your Role as QA', placeholder: 'e.g., Manual Tester, Automation Engineer' },
+                      ].map((field) => (
+                        <motion.div key={field.name} variants={staggerItem}>
+                          <label className="block text-gray-700 font-semibold mb-2">
+                            {field.label}
+                          </label>
+                          <motion.input
+                            type="text"
+                            value={formData[field.name]}
+                            onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                            onFocus={() => setFocusedField(field.name)}
+                            onBlur={() => setFocusedField('')}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                            placeholder={field.placeholder}
+                            animate={{
+                              scale: focusedField === field.name ? 1.02 : 1,
+                              boxShadow: focusedField === field.name
+                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                : '0 0 0 0px rgba(59, 130, 246, 0)'
+                            }}
+                            transition={{ duration: 0.2 }}
+                          />
+                        </motion.div>
+                      ))}
+
+                      <motion.div variants={staggerItem}>
+                        <label className="block text-gray-700 font-semibold mb-2">
+                          Category
+                        </label>
+                        <motion.select
+                          value={formData.category}
+                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                          onFocus={() => setFocusedField('category')}
+                          onBlur={() => setFocusedField('')}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                          animate={{
+                            scale: focusedField === 'category' ? 1.02 : 1,
+                            boxShadow: focusedField === 'category'
+                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                              : '0 0 0 0px rgba(59, 130, 246, 0)'
+                          }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <option value="work">Work Project</option>
+                          <option value="internship">Internship Project</option>
+                          <option value="university">University Project</option>
+                          <option value="manual">Manual Testing</option>
+                          <option value="automation">Automation Testing</option>
+                        </motion.select>
+                      </motion.div>
+
+                      <motion.div variants={staggerItem}>
+                        <label className="block text-gray-700 font-semibold mb-2">
+                          Upload Images
+                        </label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">
+                          Bisa pilih beberapa gambar sekaligus
+                        </p>
+                      </motion.div>
+                    </motion.div>
+
+                    <motion.div
+                      className="mt-6 flex gap-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5, duration: 0.4 }}
+                    >
+                      <motion.button
+                        type="submit"
+                        disabled={uploading}
+                        className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400"
+                        variants={buttonVariants}
+                        whileHover={!uploading ? "hover" : undefined}
+                        whileTap={!uploading ? "tap" : undefined}
+                      >
+                        {uploading ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <motion.span
+                              className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            />
+                            Uploading...
+                          </span>
+                        ) : (
+                          editingProject ? 'Update' : 'Add Project'
+                        )}
+                      </motion.button>
+                      <motion.button
+                        type="button"
+                        onClick={() => setShowForm(false)}
+                        className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
+                        whileHover={{
+                          backgroundColor: '#d1d5db',
+                          scale: 1.02,
+                          transition: { duration: 0.2 }
+                        }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Cancel
+                      </motion.button>
+                    </motion.div>
+                  </form>
                 </motion.div>
-              </form>
-            </motion.div>
               </motion.div>
             </>
           )}
@@ -641,17 +635,16 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <motion.span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            project.category === 'work'
+                          className={`px-2 py-1 rounded-full text-xs ${project.category === 'work'
                               ? 'bg-blue-100 text-blue-800'
                               : project.category === 'internship'
-                              ? 'bg-green-100 text-green-800'
-                              : project.category === 'university'
-                              ? 'bg-orange-100 text-orange-800'
-                              : project.category === 'automation'
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
+                                ? 'bg-green-100 text-green-800'
+                                : project.category === 'university'
+                                  ? 'bg-orange-100 text-orange-800'
+                                  : project.category === 'automation'
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-gray-100 text-gray-800'
+                            }`}
                           whileHover={{ scale: 1.05 }}
                           transition={{ duration: 0.2 }}
                         >

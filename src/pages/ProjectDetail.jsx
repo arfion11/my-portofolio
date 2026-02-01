@@ -20,7 +20,7 @@ export default function ProjectDetail() {
     try {
       const docRef = doc(db, 'projects', id);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         setProject({ id: docSnap.id, ...docSnap.data() });
       } else {
@@ -135,11 +135,10 @@ export default function ProjectDetail() {
                   <motion.button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all ${
-                      selectedImage === index
+                    className={`flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all ${selectedImage === index
                         ? 'border-blue-500 shadow-lg'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -206,36 +205,7 @@ export default function ProjectDetail() {
               </p>
             </motion.div>
 
-            {/* Tools & Technologies */}
-            {project.tools && project.tools.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-              >
-                <h3 className="text-xl font-bold text-gray-800 mb-4">Tools & Technologies</h3>
-                <div className="flex flex-wrap gap-3">
-                  {project.tools.map((tool, index) => (
-                    <motion.span
-                      key={index}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 rounded-xl font-medium border border-blue-100"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.8 + index * 0.05, duration: 0.3 }}
-                      whileHover={{
-                        scale: 1.1,
-                        backgroundColor: '#3b82f6',
-                        color: '#ffffff',
-                        borderColor: '#3b82f6',
-                        transition: { duration: 0.2 }
-                      }}
-                    >
-                      {tool}
-                    </motion.span>
-                  ))}
-                </div>
-              </motion.div>
-            )}
+
           </div>
         </motion.div>
 

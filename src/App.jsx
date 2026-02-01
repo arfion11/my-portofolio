@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import Home from './pages/Home'
 import Portfolio from './pages/Portfolio'
 import ProjectDetail from './pages/ProjectDetail'
+import CategoryView from './pages/CategoryView'
 import About from './pages/About'
 import Contact from './pages/Contact'
 import Login from './pages/admin/Login'
@@ -29,6 +30,7 @@ function App() {
         <Routes location={location}>
           <Route path="/" element={<Home />} />
           <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="/portfolio/category/:category" element={<CategoryView />} />
           <Route path="/portfolio/:id" element={<ProjectDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />

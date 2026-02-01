@@ -31,9 +31,8 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      className={`bg-white sticky top-0 z-[100] transition-all duration-300 w-full ${
-        scrolled ? 'shadow-lg' : ''
-      }`}
+      className={`bg-white sticky top-0 z-[100] transition-all duration-300 w-full ${scrolled ? 'shadow-lg' : ''
+        }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: [0.43, 0.13, 0.23, 0.96] }}
@@ -43,7 +42,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
             <motion.div
-              className="text-lg sm:text-xl lg:text-2xl font-bold text-primary"
+              className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-700"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
@@ -68,9 +67,8 @@ export default function Navbar() {
                     transition={{ delay: index * 0.1, duration: 0.3 }}
                   >
                     <motion.span
-                      className={`font-medium transition-colors text-sm lg:text-base ${
-                        isActive ? 'text-primary' : 'text-gray-700'
-                      }`}
+                      className={`font-medium transition-colors text-sm lg:text-base ${isActive ? 'text-primary' : 'text-gray-700'
+                        }`}
                       whileHover={{ color: '#2563eb' }}
                     >
                       {item.name}
@@ -78,12 +76,14 @@ export default function Navbar() {
                     {/* Active indicator */}
                     {isActive && (
                       <motion.div
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full"
                         layoutId="activeTab"
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        exit={{ scaleX: 0 }}
-                        transition={{ duration: 0.3, ease: [0.43, 0.13, 0.23, 0.96] }}
+                        initial={false}
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30
+                        }}
                       />
                     )}
                     {/* Hover underline */}
@@ -152,11 +152,10 @@ export default function Navbar() {
                     to={item.path}
                   >
                     <motion.div
-                      className={`py-3 px-4 rounded-lg font-medium ${
-                        isActive
-                          ? 'bg-blue-50 text-primary'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
+                      className={`py-3 px-4 rounded-lg font-medium ${isActive
+                        ? 'bg-blue-50 text-primary'
+                        : 'text-gray-700 hover:bg-gray-50'
+                        }`}
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{

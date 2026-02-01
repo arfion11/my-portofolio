@@ -395,9 +395,8 @@ export default function Home() {
                 >
                   <Card
                     title={project.title}
-                    description={project.description}
                     image={project.images?.[0]}
-                    tags={project.tools}
+                    projectId={project.id}
                     delay={index * 0.1}
                   />
                 </motion.div>
