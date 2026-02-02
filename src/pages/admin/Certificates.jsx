@@ -20,7 +20,6 @@ export default function Certificates() {
     title: '',
     issuer: '',
     date: '',
-    date: '',
     description: '',
     credentialUrl: '',
     file: null,
