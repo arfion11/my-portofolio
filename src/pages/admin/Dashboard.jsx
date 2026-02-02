@@ -9,9 +9,9 @@ import {
   doc,
   serverTimestamp
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signOut } from 'firebase/auth';
-import { db, storage, auth } from '../../config/firebase';
+import { db, auth } from '../../config/firebase';
+import { uploadToCloudinary } from '../../config/cloudinary';
 import { Plus, Edit, Trash2, LogOut, X, Mail, Award, Upload, FileText, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -22,6 +22,8 @@ import {
   staggerContainer,
   staggerItem
 } from '../../utils/animations';
+import ImageCropModal from '../../components/ImageCropModal';
+import { blobToFile } from '../../utils/cropUtils';
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
@@ -31,29 +33,24 @@ export default function Dashboard() {
   const [focusedField, setFocusedField] = useState('');
   const navigate = useNavigate();
 
-  // Certificate modal state
-  const [showCertificateModal, setShowCertificateModal] = useState(false);
-  const [certificateFormData, setCertificateFormData] = useState({
-    title: '',
-    issuer: '',
-    date: '',
-    description: '',
-    file: null,
-    fileType: 'image'
-  });
-  const [uploadingCertificate, setUploadingCertificate] = useState(false);
 
-  // Form state
+
   const [formData, setFormData] = useState({
     title: '',
     company: '',
     description: '',
     role: '',
-    category: 'work',
-    images: []
+    projectDate: '',
+    images: [],
+    isSelected: false
   });
   const [imageFiles, setImageFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
   const [uploading, setUploading] = useState(false);
+
+  // Crop state
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
 
   useEffect(() => {
     fetchProjects();
@@ -75,18 +72,51 @@ export default function Dashboard() {
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImageFiles(files);
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setCropImageSrc(reader.result);
+        setShowCropModal(true);
+      });
+      reader.readAsDataURL(file);
+      // Reset input value to allow selecting same file again
+      e.target.value = '';
+    }
+  };
+
+  const handleCropComplete = (croppedBlob) => {
+    const file = blobToFile(croppedBlob, `project-image-${Date.now()}.jpg`);
+    setImageFiles(prev => [...prev, file]);
+    setPreviewUrls(prev => [...prev, URL.createObjectURL(croppedBlob)]);
+  };
+
+  const removeImage = (index) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => {
+      URL.revokeObjectURL(prev[index]);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const removeExistingImage = (imageUrl) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter(img => img !== imageUrl)
+    }));
   };
 
   const uploadImages = async () => {
     const imageUrls = [];
 
     for (const file of imageFiles) {
-      const storageRef = ref(storage, `projects/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      imageUrls.push(url);
+      try {
+        const url = await uploadToCloudinary(file);
+        imageUrls.push(url);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        throw new Error(`Failed to upload ${file.name}`);
+      }
     }
 
     return imageUrls;
@@ -128,10 +158,12 @@ export default function Dashboard() {
         company: '',
         description: '',
         role: '',
-        category: 'work',
-        images: []
+        projectDate: '',
+        images: [],
+        isSelected: false
       });
       setImageFiles([]);
+      setPreviewUrls([]);
       setShowForm(false);
       setEditingProject(null);
 
@@ -152,9 +184,12 @@ export default function Dashboard() {
       company: project.company,
       description: project.description,
       role: project.role,
-      category: project.category || 'manual',
-      images: project.images || []
+      projectDate: project.projectDate || '',
+      images: project.images || [],
+      isSelected: project.isSelected || false
     });
+    setImageFiles([]);
+    setPreviewUrls([]);
     setShowForm(true);
   };
 
@@ -171,59 +206,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleCertificateFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const fileType = file.type.includes('pdf') ? 'pdf' : 'image';
-      setCertificateFormData({ ...certificateFormData, file, fileType });
-    }
-  };
-
-  const handleCertificateSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!certificateFormData.file) {
-      alert('Please select a file');
-      return;
-    }
-
-    setUploadingCertificate(true);
-
-    try {
-      // Upload file to Firebase Storage
-      const fileRef = ref(storage, `certificates/${Date.now()}_${certificateFormData.file.name}`);
-      await uploadBytes(fileRef, certificateFormData.file);
-      const fileURL = await getDownloadURL(fileRef);
-
-      // Add certificate to Firestore
-      await addDoc(collection(db, 'certificates'), {
-        title: certificateFormData.title,
-        issuer: certificateFormData.issuer,
-        date: certificateFormData.date,
-        description: certificateFormData.description,
-        image: fileURL,
-        fileType: certificateFormData.fileType,
-        createdAt: new Date()
-      });
-
-      alert('Certificate added successfully!');
-      setShowCertificateModal(false);
-      setCertificateFormData({
-        title: '',
-        issuer: '',
-        date: '',
-        description: '',
-        file: null,
-        fileType: 'image'
-      });
-    } catch (error) {
-      console.error('Error adding certificate:', error);
-      alert('Failed to add certificate');
-    } finally {
-      setUploadingCertificate(false);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -234,14 +216,7 @@ export default function Dashboard() {
   };
 
   return (
-    <motion.div
-      className="min-h-screen bg-gray-50"
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-    >
-      {/* Header */}
+    <>
       <motion.div
         className="bg-white shadow-md"
         initial={{ y: -100, opacity: 0 }}
@@ -285,7 +260,7 @@ export default function Dashboard() {
               Journey Photos
             </motion.button>
             <motion.button
-              onClick={() => setShowCertificateModal(true)}
+              onClick={() => navigate('/admin/certificates')}
               className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -295,7 +270,7 @@ export default function Dashboard() {
               whileTap="tap"
             >
               <Award size={20} />
-              Add Certificate
+              Certificates
             </motion.button>
             <motion.button
               onClick={handleLogout}
@@ -335,9 +310,11 @@ export default function Dashboard() {
                 company: '',
                 description: '',
                 role: '',
-                category: 'work',
+                projectDate: '',
                 images: []
               });
+              setImageFiles([]);
+              setPreviewUrls([]);
             }}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold"
             variants={buttonVariants}
@@ -352,211 +329,255 @@ export default function Dashboard() {
         {/* Form Modal */}
         <AnimatePresence>
           {showForm && (
-            <>
+            <motion.div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+              variants={backdropVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              onClick={() => setShowForm(false)}
+            >
               <motion.div
-                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-                variants={backdropVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                onClick={() => setShowForm(false)}
+                className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                variants={modalVariants}
+                onClick={(e) => e.stopPropagation()}
               >
-                <motion.div
-                  className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-                  variants={modalVariants}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex justify-between items-center mb-6">
-                    <motion.h3
-                      className="text-2xl font-bold"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1, duration: 0.3 }}
-                    >
-                      {editingProject ? 'Edit Project' : 'Add New Project'}
-                    </motion.h3>
-                    <motion.button
-                      onClick={() => setShowForm(false)}
-                      whileHover={{ scale: 1.1, rotate: 90 }}
-                      whileTap={{ scale: 0.9 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <X size={24} />
-                    </motion.button>
-                  </div>
+                <div className="flex justify-between items-center mb-6">
+                  <motion.h3
+                    className="text-2xl font-bold"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.3 }}
+                  >
+                    {editingProject ? 'Edit Project' : 'Add New Project'}
+                  </motion.h3>
+                  <motion.button
+                    onClick={() => setShowForm(false)}
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X size={24} />
+                  </motion.button>
+                </div>
 
-                  <form onSubmit={handleSubmit}>
-                    <motion.div
-                      className="space-y-4"
-                      variants={staggerContainer}
-                      initial="initial"
-                      animate="animate"
-                    >
-                      {[
-                        { name: 'title', label: 'Project Title *', type: 'text', required: true },
-                        { name: 'company', label: 'Company / Client', type: 'text', required: false },
-                      ].map((field, index) => (
-                        <motion.div key={field.name} variants={staggerItem}>
-                          <label className="block text-gray-700 font-semibold mb-2">
-                            {field.label}
-                          </label>
-                          <motion.input
-                            type={field.type}
-                            value={formData[field.name]}
-                            onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                            onFocus={() => setFocusedField(field.name)}
-                            onBlur={() => setFocusedField('')}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                            required={field.required}
-                            animate={{
-                              scale: focusedField === field.name ? 1.02 : 1,
-                              boxShadow: focusedField === field.name
-                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                                : '0 0 0 0px rgba(59, 130, 246, 0)'
-                            }}
-                            transition={{ duration: 0.2 }}
-                          />
-                        </motion.div>
-                      ))}
-
-                      <motion.div variants={staggerItem}>
+                <form onSubmit={handleSubmit}>
+                  <motion.div
+                    className="space-y-4"
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                  >
+                    {[
+                      { name: 'title', label: 'Project Title *', type: 'text', required: true },
+                      { name: 'company', label: 'Company / Client', type: 'text', required: false },
+                    ].map((field, index) => (
+                      <motion.div key={field.name} variants={staggerItem}>
                         <label className="block text-gray-700 font-semibold mb-2">
-                          Description *
+                          {field.label}
                         </label>
-                        <motion.textarea
-                          value={formData.description}
-                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                          onFocus={() => setFocusedField('description')}
+                        <motion.input
+                          type={field.type}
+                          value={formData[field.name]}
+                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          onFocus={() => setFocusedField(field.name)}
                           onBlur={() => setFocusedField('')}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                          rows="4"
-                          required
+                          required={field.required}
                           animate={{
-                            scale: focusedField === 'description' ? 1.02 : 1,
-                            boxShadow: focusedField === 'description'
+                            scale: focusedField === field.name ? 1.02 : 1,
+                            boxShadow: focusedField === field.name
                               ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
                               : '0 0 0 0px rgba(59, 130, 246, 0)'
                           }}
                           transition={{ duration: 0.2 }}
                         />
                       </motion.div>
+                    ))}
 
-                      {[
-                        { name: 'role', label: 'Your Role as QA', placeholder: 'e.g., Manual Tester, Automation Engineer' },
-                      ].map((field) => (
-                        <motion.div key={field.name} variants={staggerItem}>
-                          <label className="block text-gray-700 font-semibold mb-2">
-                            {field.label}
-                          </label>
-                          <motion.input
-                            type="text"
-                            value={formData[field.name]}
-                            onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                            onFocus={() => setFocusedField(field.name)}
-                            onBlur={() => setFocusedField('')}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                            placeholder={field.placeholder}
-                            animate={{
-                              scale: focusedField === field.name ? 1.02 : 1,
-                              boxShadow: focusedField === field.name
-                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                                : '0 0 0 0px rgba(59, 130, 246, 0)'
-                            }}
-                            transition={{ duration: 0.2 }}
-                          />
-                        </motion.div>
-                      ))}
-
-                      <motion.div variants={staggerItem}>
-                        <label className="block text-gray-700 font-semibold mb-2">
-                          Category
-                        </label>
-                        <motion.select
-                          value={formData.category}
-                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          onFocus={() => setFocusedField('category')}
-                          onBlur={() => setFocusedField('')}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
-                          animate={{
-                            scale: focusedField === 'category' ? 1.02 : 1,
-                            boxShadow: focusedField === 'category'
-                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                              : '0 0 0 0px rgba(59, 130, 246, 0)'
-                          }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <option value="work">Work Project</option>
-                          <option value="internship">Internship Project</option>
-                          <option value="university">University Project</option>
-                          <option value="manual">Manual Testing</option>
-                          <option value="automation">Automation Testing</option>
-                        </motion.select>
-                      </motion.div>
-
-                      <motion.div variants={staggerItem}>
-                        <label className="block text-gray-700 font-semibold mb-2">
-                          Upload Images
-                        </label>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                        />
-                        <p className="text-sm text-gray-500 mt-1">
-                          Bisa pilih beberapa gambar sekaligus
-                        </p>
-                      </motion.div>
-                    </motion.div>
-
-                    <motion.div
-                      className="mt-6 flex gap-4"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5, duration: 0.4 }}
-                    >
-                      <motion.button
-                        type="submit"
-                        disabled={uploading}
-                        className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400"
-                        variants={buttonVariants}
-                        whileHover={!uploading ? "hover" : undefined}
-                        whileTap={!uploading ? "tap" : undefined}
-                      >
-                        {uploading ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <motion.span
-                              className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                            />
-                            Uploading...
-                          </span>
-                        ) : (
-                          editingProject ? 'Update' : 'Add Project'
-                        )}
-                      </motion.button>
-                      <motion.button
-                        type="button"
-                        onClick={() => setShowForm(false)}
-                        className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
-                        whileHover={{
-                          backgroundColor: '#d1d5db',
-                          scale: 1.02,
-                          transition: { duration: 0.2 }
+                    <motion.div variants={staggerItem}>
+                      <label className="block text-gray-700 font-semibold mb-2">
+                        Description *
+                      </label>
+                      <motion.textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        onFocus={() => setFocusedField('description')}
+                        onBlur={() => setFocusedField('')}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                        rows="4"
+                        required
+                        animate={{
+                          scale: focusedField === 'description' ? 1.02 : 1,
+                          boxShadow: focusedField === 'description'
+                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                            : '0 0 0 0px rgba(59, 130, 246, 0)'
                         }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Cancel
-                      </motion.button>
+                        transition={{ duration: 0.2 }}
+                      />
                     </motion.div>
-                  </form>
-                </motion.div>
+
+                    {[
+                      { name: 'role', label: 'Your Role as QA', placeholder: 'e.g., Manual Tester, Automation Engineer' },
+                    ].map((field) => (
+                      <motion.div key={field.name} variants={staggerItem}>
+                        <label className="block text-gray-700 font-semibold mb-2">
+                          {field.label}
+                        </label>
+                        <motion.input
+                          type="text"
+                          value={formData[field.name]}
+                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          onFocus={() => setFocusedField(field.name)}
+                          onBlur={() => setFocusedField('')}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                          placeholder={field.placeholder}
+                          animate={{
+                            scale: focusedField === field.name ? 1.02 : 1,
+                            boxShadow: focusedField === field.name
+                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                              : '0 0 0 0px rgba(59, 130, 246, 0)'
+                          }}
+                          transition={{ duration: 0.2 }}
+                        />
+                      </motion.div>
+                    ))}
+
+                    <motion.div variants={staggerItem}>
+                      <label className="block text-gray-700 font-semibold mb-2">
+                        Project Date
+                      </label>
+                      <motion.input
+                        type="date"
+                        value={formData.projectDate}
+                        onChange={(e) => setFormData({ ...formData, projectDate: e.target.value })}
+                        onFocus={() => setFocusedField('projectDate')}
+                        onBlur={() => setFocusedField('')}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
+                        animate={{
+                          scale: focusedField === 'projectDate' ? 1.02 : 1,
+                          boxShadow: focusedField === 'projectDate'
+                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                            : '0 0 0 0px rgba(59, 130, 246, 0)'
+                        }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    </motion.div>
+
+                    <motion.div variants={staggerItem} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                      <input
+                        type="checkbox"
+                        id="isSelected"
+                        checked={formData.isSelected}
+                        onChange={(e) => setFormData({ ...formData, isSelected: e.target.checked })}
+                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                      />
+                      <label htmlFor="isSelected" className="text-gray-700 font-medium cursor-pointer select-none">
+                        Mark as Selected Project (Featured)
+                      </label>
+                    </motion.div>
+
+                    <motion.div variants={staggerItem}>
+                      <label className="block text-gray-700 font-semibold mb-2">
+                        Upload Images
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Select an image to crop and add. You can add multiple images one by one.
+                      </p>
+
+                      {/* Image Previews */}
+                      <div className="grid grid-cols-3 gap-4 mt-4">
+                        {/* Existing Images */}
+                        {formData.images && formData.images.map((img, index) => (
+                          <div key={`existing-${index}`} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                            <img src={img} alt={`Existing ${index}`} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removeExistingImage(img)}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+
+                        {/* New Cropped Images */}
+                        {previewUrls.map((url, index) => (
+                          <div key={`new-${index}`} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500">
+                            <img src={url} alt={`New ${index}`} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.div
+                    className="mt-6 flex gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.4 }}
+                  >
+                    <motion.button
+                      type="submit"
+                      disabled={uploading}
+                      className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400"
+                      variants={buttonVariants}
+                      whileHover={!uploading ? "hover" : undefined}
+                      whileTap={!uploading ? "tap" : undefined}
+                    >
+                      {uploading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <motion.span
+                            className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          />
+                          Uploading...
+                        </span>
+                      ) : (
+                        editingProject ? 'Update' : 'Add Project'
+                      )}
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      onClick={() => setShowForm(false)}
+                      className="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold"
+                      whileHover={{
+                        backgroundColor: '#d1d5db',
+                        scale: 1.02,
+                        transition: { duration: 0.2 }
+                      }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  </motion.div>
+                </form>
               </motion.div>
-            </>
+            </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Crop Modal moved outside to avoid stacking context issues */}
+        <ImageCropModal
+          isOpen={showCropModal}
+          onClose={() => setShowCropModal(false)}
+          imageSrc={cropImageSrc}
+          onCropComplete={handleCropComplete}
+        />
 
         {/* Projects Table */}
         <AnimatePresence mode="wait">
@@ -602,7 +623,7 @@ export default function Dashboard() {
                       Company
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Category
+                      Date
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -633,23 +654,8 @@ export default function Dashboard() {
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                         {project.company}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <motion.span
-                          className={`px-2 py-1 rounded-full text-xs ${project.category === 'work'
-                              ? 'bg-blue-100 text-blue-800'
-                              : project.category === 'internship'
-                                ? 'bg-green-100 text-green-800'
-                                : project.category === 'university'
-                                  ? 'bg-orange-100 text-orange-800'
-                                  : project.category === 'automation'
-                                    ? 'bg-purple-100 text-purple-800'
-                                    : 'bg-gray-100 text-gray-800'
-                            }`}
-                          whileHover={{ scale: 1.05 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          {project.category}
-                        </motion.span>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                        {project.projectDate ? new Date(project.projectDate).toLocaleDateString() : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <motion.button
@@ -687,129 +693,9 @@ export default function Dashboard() {
 
         {/* Certificate Modal */}
         <AnimatePresence>
-          {showCertificateModal && (
-            <motion.div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-              variants={backdropVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              onClick={() => setShowCertificateModal(false)}
-            >
-              <motion.div
-                className="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-                variants={modalVariants}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800">Add New Certificate</h2>
-                  <button
-                    onClick={() => setShowCertificateModal(false)}
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
 
-                <form onSubmit={handleCertificateSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Certificate Title *
-                    </label>
-                    <input
-                      type="text"
-                      value={certificateFormData.title}
-                      onChange={(e) => setCertificateFormData({ ...certificateFormData, title: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Issuing Organization *
-                    </label>
-                    <input
-                      type="text"
-                      value={certificateFormData.issuer}
-                      onChange={(e) => setCertificateFormData({ ...certificateFormData, issuer: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Issue Date *
-                    </label>
-                    <input
-                      type="date"
-                      value={certificateFormData.date}
-                      onChange={(e) => setCertificateFormData({ ...certificateFormData, date: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description
-                    </label>
-                    <textarea
-                      value={certificateFormData.description}
-                      onChange={(e) => setCertificateFormData({ ...certificateFormData, description: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      rows="3"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Certificate File (Image or PDF) *
-                    </label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={handleCertificateFileChange}
-                        className="hidden"
-                        id="certificate-file-input"
-                        required
-                      />
-                      <label htmlFor="certificate-file-input" className="cursor-pointer">
-                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-600">
-                          {certificateFormData.file ? certificateFormData.file.name : 'Click to upload image or PDF'}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Supported: JPG, PNG, PDF
-                        </p>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 pt-4">
-                    <button
-                      type="submit"
-                      disabled={uploadingCertificate}
-                      className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {uploadingCertificate ? 'Uploading...' : 'Add Certificate'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCertificateModal(false)}
-                      className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </>
   );
 }

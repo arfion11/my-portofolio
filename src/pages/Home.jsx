@@ -226,16 +226,11 @@ export default function Home() {
 
                 {/* Floating Badge */}
                 <motion.div
-                  className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-4 border-4 border-blue-500"
-                  initial={{ scale: 0, rotate: -180 }}
-                  whileInView={{ scale: 1, rotate: 0 }}
+                  className="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-4 border-4 border-blue-500 transition-transform duration-300 hover:scale-110 hover:rotate-6"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.5, duration: 0.6, type: "spring" }}
-                  whileHover={{
-                    scale: 1.1,
-                    rotate: 5,
-                    transition: { duration: 0.2 }
-                  }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
                 >
                   <div className="text-center">
                     <p className="text-3xl font-bold text-blue-600">안녕</p>
@@ -287,39 +282,23 @@ export default function Home() {
               </motion.p>
 
               {/* Highlights List */}
-              <motion.div
-                className="space-y-4"
-                variants={staggerContainer}
-                initial="initial"
-                whileInView="animate"
-                viewport={{ once: true }}
-              >
+              <div className="space-y-4">
                 {highlights.map((highlight, index) => (
                   <motion.div
                     key={index}
-                    className="flex items-start gap-3"
-                    variants={staggerItem}
-                    whileHover={{
-                      x: 10,
-                      transition: { duration: 0.2 }
-                    }}
+                    className="flex items-start gap-3 group cursor-default"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.05, duration: 0.3 }}
                   >
-                    <motion.div
-                      initial={{ scale: 0, rotate: -180 }}
-                      whileInView={{ scale: 1, rotate: 0 }}
-                      viewport={{ once: true }}
-                      transition={{
-                        delay: 0.5 + (index * 0.1),
-                        duration: 0.4,
-                        type: "spring"
-                      }}
-                    >
+                    <div className="transition-transform duration-200 group-hover:scale-110">
                       <CheckCircle2 className="text-blue-600 flex-shrink-0 mt-1" size={24} />
-                    </motion.div>
-                    <p className="text-gray-700 text-lg">{highlight}</p>
+                    </div>
+                    <p className="text-gray-700 text-lg transition-transform duration-200 group-hover:translate-x-1">{highlight}</p>
                   </motion.div>
                 ))}
-              </motion.div>
+              </div>
 
               {/* CTA Button */}
               <motion.div
@@ -381,27 +360,17 @@ export default function Home() {
               <p className="text-gray-600">No projects yet. Add some from the admin dashboard!</p>
             </motion.div>
           ) : (
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-              variants={staggerContainer}
-              initial="initial"
-              whileInView="animate"
-              viewport={{ once: true, margin: "-100px" }}
-            >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {featuredProjects.map((project, index) => (
-                <motion.div
+                <Card
                   key={project.id}
-                  variants={staggerItem}
-                >
-                  <Card
-                    title={project.title}
-                    image={project.images?.[0]}
-                    projectId={project.id}
-                    delay={index * 0.1}
-                  />
-                </motion.div>
+                  title={project.title}
+                  image={project.images?.[0]}
+                  projectId={project.id}
+                  delay={index * 0.05}
+                />
               ))}
-            </motion.div>
+            </div>
           )}
 
           <motion.div
@@ -425,6 +394,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-    </motion.div>
+    </motion.div >
   );
 }

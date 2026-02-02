@@ -11,11 +11,13 @@ import {
   orderBy,
   query
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signOut } from 'firebase/auth';
-import { db, storage, auth } from '../../config/firebase';
+import { db, auth } from '../../config/firebase';
+import { uploadToCloudinary } from '../../config/cloudinary';
 import { Plus, Edit, Trash2, LogOut, X, Upload, MapPin, Rocket, GraduationCap, Briefcase, Heart, Award } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ImageCropModal from '../../components/ImageCropModal';
+import { blobToFile } from '../../utils/cropUtils';
 
 export default function Journey() {
   const navigate = useNavigate();
@@ -26,6 +28,10 @@ export default function Journey() {
   const [uploading, setUploading] = useState(false);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+
+  // Crop state
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
 
   const [formData, setFormData] = useState({
     caption: '',
@@ -74,22 +80,32 @@ export default function Journey() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
+      reader.addEventListener('load', () => {
+        setCropImageSrc(reader.result);
+        setShowCropModal(true);
+      });
       reader.readAsDataURL(file);
+      e.target.value = '';
     }
+  };
+
+  const handleCropComplete = (croppedBlob) => {
+    const file = blobToFile(croppedBlob, `journey-photo-${Date.now()}.jpg`);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(croppedBlob));
   };
 
   const uploadImage = async () => {
     if (!imageFile) return editingPhoto?.image || '';
-    
-    const storageRef = ref(storage, `journey/${Date.now()}_${imageFile.name}`);
-    await uploadBytes(storageRef, imageFile);
-    const url = await getDownloadURL(storageRef);
-    return url;
+
+    try {
+      const url = await uploadToCloudinary(imageFile);
+      return url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw new Error(`Failed to upload image`);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -98,7 +114,7 @@ export default function Journey() {
 
     try {
       const imageUrl = await uploadImage();
-      
+
       const photoData = {
         ...formData,
         image: imageUrl,
@@ -290,6 +306,12 @@ export default function Journey() {
       </div>
 
       {/* Modal */}
+      <ImageCropModal
+        isOpen={showCropModal}
+        onClose={() => setShowCropModal(false)}
+        imageSrc={cropImageSrc}
+        onCropComplete={handleCropComplete}
+      />
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -410,11 +432,10 @@ export default function Journey() {
                           key={option.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, icon: option.value })}
-                          className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-all ${
-                            formData.icon === option.value
-                              ? 'border-blue-600 bg-blue-50'
-                              : 'border-gray-300 hover:border-gray-400'
-                          }`}
+                          className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-all ${formData.icon === option.value
+                            ? 'border-blue-600 bg-blue-50'
+                            : 'border-gray-300 hover:border-gray-400'
+                            }`}
                         >
                           <IconComponent className={`w-6 h-6 ${formData.icon === option.value ? 'text-blue-600' : 'text-gray-600'}`} />
                           <span className={`text-sm ${formData.icon === option.value ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>

@@ -1,11 +1,14 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../../config/firebase';
+import { db, auth } from '../../config/firebase';
+import { uploadToCloudinary } from '../../config/cloudinary';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Plus, Trash2, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
 import { pageVariants, buttonVariants } from '../../utils/animations';
+import ImageCropModal from '../../components/ImageCropModal';
+import { blobToFile } from '../../utils/cropUtils';
 
 export default function Certificates() {
   const navigate = useNavigate();
@@ -17,18 +20,27 @@ export default function Certificates() {
     title: '',
     issuer: '',
     date: '',
+    date: '',
     description: '',
+    credentialUrl: '',
     file: null,
     fileType: 'image' // 'image' or 'pdf'
   });
 
+  // Crop state
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
   useEffect(() => {
-    const user = localStorage.getItem('adminUser');
-    if (!user) {
-      navigate('/admin/login');
-      return;
-    }
-    fetchCertificates();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        navigate('/admin/login');
+      } else {
+        fetchCertificates();
+      }
+    });
+    return () => unsubscribe();
   }, [navigate]);
 
   const fetchCertificates = async () => {
@@ -51,14 +63,30 @@ export default function Certificates() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const fileType = file.type.includes('pdf') ? 'pdf' : 'image';
-      setFormData({ ...formData, file, fileType });
+      if (file.type.includes('pdf')) {
+        setFormData({ ...formData, file, fileType: 'pdf' });
+        setPreviewUrl(null);
+      } else {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          setCropImageSrc(reader.result);
+          setShowCropModal(true);
+        });
+        reader.readAsDataURL(file);
+        e.target.value = ''; // Reset input
+      }
     }
+  };
+
+  const handleCropComplete = (croppedBlob) => {
+    const file = blobToFile(croppedBlob, `certificate - ${Date.now()}.jpg`);
+    setFormData({ ...formData, file, fileType: 'image' });
+    setPreviewUrl(URL.createObjectURL(croppedBlob));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.file) {
       alert('Please select a file');
       return;
@@ -67,10 +95,8 @@ export default function Certificates() {
     setUploading(true);
 
     try {
-      // Upload file to Firebase Storage
-      const fileRef = ref(storage, `certificates/${Date.now()}_${formData.file.name}`);
-      await uploadBytes(fileRef, formData.file);
-      const fileURL = await getDownloadURL(fileRef);
+      // Upload file to Cloudinary
+      const fileURL = await uploadToCloudinary(formData.file);
 
       // Add certificate to Firestore
       await addDoc(collection(db, 'certificates'), {
@@ -78,6 +104,7 @@ export default function Certificates() {
         issuer: formData.issuer,
         date: formData.date,
         description: formData.description,
+        credentialUrl: formData.credentialUrl || '',
         image: fileURL,
         fileType: formData.fileType,
         createdAt: new Date()
@@ -93,6 +120,7 @@ export default function Certificates() {
         file: null,
         fileType: 'image'
       });
+      setPreviewUrl(null);
       fetchCertificates();
     } catch (error) {
       console.error('Error adding certificate:', error);
@@ -115,9 +143,13 @@ export default function Certificates() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminUser');
-    navigate('/admin/login');
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      navigate('/admin/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   if (loading) {
@@ -181,6 +213,12 @@ export default function Certificates() {
         </motion.button>
 
         {/* Add Certificate Form Modal */}
+        <ImageCropModal
+          isOpen={showCropModal}
+          onClose={() => setShowCropModal(false)}
+          imageSrc={cropImageSrc}
+          onCropComplete={handleCropComplete}
+        />
         <AnimatePresence>
           {showForm && (
             <motion.div
@@ -261,6 +299,19 @@ export default function Certificates() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Credential URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.credentialUrl}
+                      onChange={(e) => setFormData({ ...formData, credentialUrl: e.target.value })}
+                      placeholder="https://..."
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Certificate File (Image or PDF) *
                     </label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
@@ -270,13 +321,35 @@ export default function Certificates() {
                         onChange={handleFileChange}
                         className="hidden"
                         id="certificate-file"
-                        required
                       />
-                      <label htmlFor="certificate-file" className="cursor-pointer">
-                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-600">
-                          {formData.file ? formData.file.name : 'Click to upload image or PDF'}
-                        </p>
+                      <label htmlFor="certificate-file" className="cursor-pointer block">
+                        {!previewUrl && !formData.file && <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />}
+
+                        {/* Preview */}
+                        {previewUrl ? (
+                          <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-2">
+                            <img src={previewUrl} alt="Certificate Preview" className="w-full h-full object-contain" />
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setPreviewUrl(null);
+                                setFormData({ ...formData, file: null });
+                              }}
+                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : formData.file && formData.fileType === 'pdf' ? (
+                          <div className="flex flex-col items-center mb-2">
+                            <FileText className="w-16 h-16 text-red-500 mb-2" />
+                            <span className="text-gray-700 font-medium">{formData.file.name}</span>
+                          </div>
+                        ) : (
+                          <p className="text-gray-600">Click to upload image or PDF</p>
+                        )}
+
                         <p className="text-sm text-gray-500 mt-1">
                           Supported: JPG, PNG, PDF
                         </p>
