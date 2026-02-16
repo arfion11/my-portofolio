@@ -136,9 +136,7 @@ export default function Dashboard() {
       // Prepare data
       const projectData = {
         ...formData,
-        images: editingProject
-          ? [...(editingProject.images || []), ...imageUrls]
-          : imageUrls,
+        images: [...(formData.images || []), ...imageUrls],
         createdAt: editingProject ? editingProject.createdAt : serverTimestamp()
       };
 
