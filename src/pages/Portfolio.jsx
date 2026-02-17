@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../services/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Layers, Award, ChevronLeft, ChevronRight, ArrowRight, X, Calendar, User } from 'lucide-react';
 import ProjectSlider from '../components/ProjectSlider';

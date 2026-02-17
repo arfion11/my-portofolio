@@ -10,8 +10,8 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { db, auth } from '../../config/firebase';
-import { uploadToCloudinary } from '../../config/cloudinary';
+import { db, auth } from '../../services/firebase';
+import { uploadToCloudinary } from '../../services/cloudinary';
 import { Plus, Edit, Trash2, LogOut, X, Mail, Award, Upload, FileText, Heart, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { db, auth } from '../../config/firebase';
+import { db, auth } from '../../services/firebase';
 import { signOut } from 'firebase/auth';
 import { LogOut, Mail, Trash2, CheckCircle, Clock, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
-import { db, auth } from '../../config/firebase';
-import { uploadToCloudinary } from '../../config/cloudinary';
+import { db, auth } from '../../services/firebase';
+import { uploadToCloudinary } from '../../services/cloudinary';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Plus, Trash2, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
 import { pageVariants, buttonVariants } from '../../utils/animations';

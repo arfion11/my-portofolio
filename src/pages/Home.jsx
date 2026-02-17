@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../services/firebase';
 import { CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Card from '../components/Card';

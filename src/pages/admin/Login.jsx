@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../config/firebase';
+import { auth } from '../../services/firebase';
 import { Lock, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { pageVariants, buttonVariants, scaleIn } from '../../utils/animations';

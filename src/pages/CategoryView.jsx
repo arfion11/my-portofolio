@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../services/firebase';
 import { motion } from 'framer-motion';
 import { ChevronLeft, Zap, Layers, Award, Briefcase, GraduationCap } from 'lucide-react';
 import MinimalProjectCard from '../components/MinimalProjectCard';

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../services/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Briefcase, GraduationCap, Code2, ExternalLink, Calendar, User } from 'lucide-react';
 

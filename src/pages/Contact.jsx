@@ -3,9 +3,9 @@ import { Mail, Linkedin, Github, Phone, MapPin, CheckCircle, AlertCircle } from 
 import { motion, AnimatePresence } from 'framer-motion';
 import { buttonVariants, modalVariants } from '../utils/animations';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db } from '../services/firebase';
 import emailjs from '@emailjs/browser';
-import { EMAILJS_CONFIG } from '../config/emailjs';
+import { EMAILJS_CONFIG } from '../services/emailjs';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
