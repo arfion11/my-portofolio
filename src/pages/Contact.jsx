@@ -86,7 +86,7 @@ export default function Contact() {
     {
       icon: MapPin,
       label: 'Location',
-      value: 'Jakarta, Indonesia',
+      value: 'Tangerang Selatan, Indonesia',
       color: 'bg-purple-100 text-purple-600',
     },
   ];
