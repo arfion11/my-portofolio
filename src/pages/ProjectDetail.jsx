@@ -34,6 +34,22 @@ export default function ProjectDetail() {
     }
   };
 
+  // Function to convert URLs in text to clickable links
+  const renderDescriptionWithLinks = (text) => {
+    if (!text) return '';
+
+    // Regular expression to match URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    // Replace URLs with anchor tags
+    const htmlText = text.replace(urlRegex, (url) => {
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline break-all">${url}</a>`;
+    });
+
+    // Replace line breaks with <br> tags
+    return htmlText.replace(/\n/g, '<br>');
+  };
+
 
 
   if (loading) {
@@ -222,9 +238,10 @@ export default function ProjectDetail() {
               className="prose prose-lg max-w-none"
               variants={itemVariants}
             >
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {project.description}
-              </p>
+              <div
+                className="text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: renderDescriptionWithLinks(project.description) }}
+              />
             </motion.div>
           </div>
         </motion.div>
