@@ -16,10 +16,38 @@ export default function Portfolio() {
   const [isDraggingCerts, setIsDraggingCerts] = useState(false);
   const [startXCerts, setStartXCerts] = useState(0);
   const [scrollLeftCerts, setScrollLeftCerts] = useState(0);
+  const [canScrollLeftCerts, setCanScrollLeftCerts] = useState(false);
+  const [canScrollRightCerts, setCanScrollRightCerts] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Check scroll position for certificates
+  const checkScrollCerts = () => {
+    if (certificatesCarouselRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = certificatesCarouselRef.current;
+      setCanScrollLeftCerts(scrollLeft > 0);
+      setCanScrollRightCerts(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollCerts();
+    window.addEventListener('resize', checkScrollCerts);
+
+    const slider = certificatesCarouselRef.current;
+    if (slider) {
+      slider.addEventListener('scroll', checkScrollCerts);
+    }
+
+    return () => {
+      window.removeEventListener('resize', checkScrollCerts);
+      if (slider) {
+        slider.removeEventListener('scroll', checkScrollCerts);
+      }
+    };
+  }, [certificates]);
 
   const fetchData = async () => {
     try {
@@ -196,15 +224,17 @@ export default function Portfolio() {
               {certificates.length > 0 ? (
                 <div className="relative group px-4">
                   {/* Left Arrow Button */}
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <motion.button
-                      onClick={() => scrollCertificates('left')}
-                      className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl border border-gray-100"
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <ChevronLeft className="w-6 h-6 text-gray-800" />
-                    </motion.button>
-                  </div>
+                  {canScrollLeftCerts && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <motion.button
+                        onClick={() => scrollCertificates('left')}
+                        className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl border border-gray-100"
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <ChevronLeft className="w-6 h-6 text-gray-800" />
+                      </motion.button>
+                    </div>
+                  )}
 
                   {/* Certificates Carousel Container */}
                   <div
@@ -227,15 +257,17 @@ export default function Portfolio() {
                   </div>
 
                   {/* Right Arrow Button */}
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <motion.button
-                      onClick={() => scrollCertificates('right')}
-                      className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl border border-gray-100"
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <ChevronRight className="w-6 h-6 text-gray-800" />
-                    </motion.button>
-                  </div>
+                  {canScrollRightCerts && (
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <motion.button
+                        onClick={() => scrollCertificates('right')}
+                        className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl border border-gray-100"
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <ChevronRight className="w-6 h-6 text-gray-800" />
+                      </motion.button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-12 bg-white/60 backdrop-blur-sm rounded-2xl">

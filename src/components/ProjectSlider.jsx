@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
@@ -10,6 +10,34 @@ export default function ProjectSlider({ title, projects, category, icon: Icon })
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    // Check scroll position
+    const checkScroll = () => {
+        if (sliderRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
+            setCanScrollLeft(scrollLeft > 0);
+            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1); // -1 for rounding errors
+        }
+    };
+
+    useEffect(() => {
+        checkScroll();
+        window.addEventListener('resize', checkScroll);
+
+        const slider = sliderRef.current;
+        if (slider) {
+            slider.addEventListener('scroll', checkScroll);
+        }
+
+        return () => {
+            window.removeEventListener('resize', checkScroll);
+            if (slider) {
+                slider.removeEventListener('scroll', checkScroll);
+            }
+        };
+    }, [projects]);
 
     // Scroll functions
     const scroll = (direction) => {
@@ -39,6 +67,7 @@ export default function ProjectSlider({ title, projects, category, icon: Icon })
 
     const handleMouseUp = () => {
         setIsDragging(false);
+        // checkScroll is handled by scroll event listener
     };
 
     const handleShowMore = () => {
@@ -79,15 +108,17 @@ export default function ProjectSlider({ title, projects, category, icon: Icon })
             {/* Slider Container */}
             <div className="relative group">
                 {/* Left Arrow Button */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <motion.button
-                        onClick={() => scroll('left')}
-                        className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl"
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <ChevronLeft className="w-6 h-6 text-gray-800" />
-                    </motion.button>
-                </div>
+                {canScrollLeft && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <motion.button
+                            onClick={() => scroll('left')}
+                            className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl"
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <ChevronLeft className="w-6 h-6 text-gray-800" />
+                        </motion.button>
+                    </div>
+                )}
 
                 {/* Projects Slider */}
                 <div
@@ -109,15 +140,17 @@ export default function ProjectSlider({ title, projects, category, icon: Icon })
                 </div>
 
                 {/* Right Arrow Button */}
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <motion.button
-                        onClick={() => scroll('right')}
-                        className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl"
-                        whileTap={{ scale: 0.95 }}
-                    >
-                        <ChevronRight className="w-6 h-6 text-gray-800" />
-                    </motion.button>
-                </div>
+                {canScrollRight && (
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <motion.button
+                            onClick={() => scroll('right')}
+                            className="bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white hover:shadow-xl"
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <ChevronRight className="w-6 h-6 text-gray-800" />
+                        </motion.button>
+                    </div>
+                )}
             </div>
         </div>
     );
