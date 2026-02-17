@@ -160,7 +160,7 @@ export default function About() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.5 }}
               >
-                QA Engineer / Software Tester
+                QA Engineer / Software Tester / Associate Product Manager
               </motion.p>
               <motion.p
                 className="text-gray-600 mb-6"
