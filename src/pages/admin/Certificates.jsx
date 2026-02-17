@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query } from 'firebase/firestore';
 import { db, auth } from '../../services/firebase';
 import { uploadToCloudinary } from '../../services/cloudinary';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, Plus, Trash2, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
+import { Award, Plus, Trash2, Upload, X, FileText } from 'lucide-react';
 import { pageVariants, buttonVariants } from '../../utils/animations';
 import ImageCropModal from '../../components/ImageCropModal';
 import { blobToFile } from '../../utils/cropUtils';
@@ -23,7 +22,7 @@ export default function Certificates() {
     description: '',
     credentialUrl: '',
     file: null,
-    fileType: 'image' // 'image' or 'pdf'
+    fileType: 'image', // 'image' or 'pdf'
   });
 
   // Crop state
@@ -46,9 +45,9 @@ export default function Certificates() {
     try {
       const q = query(collection(db, 'certificates'), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      const certificatesData = snapshot.docs.map(doc => ({
+      const certificatesData = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setCertificates(certificatesData);
     } catch (error) {
@@ -106,7 +105,7 @@ export default function Certificates() {
         credentialUrl: formData.credentialUrl || '',
         image: fileURL,
         fileType: formData.fileType,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       alert('Certificate added successfully!');
@@ -117,7 +116,7 @@ export default function Certificates() {
         date: '',
         description: '',
         file: null,
-        fileType: 'image'
+        fileType: 'image',
       });
       setPreviewUrl(null);
       fetchCertificates();
@@ -175,7 +174,10 @@ export default function Certificates() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold text-gray-800 mb-2">Certificates Management</h1>
-            <p className="text-gray-600">Manage your certificates and achievements</p>
+            <p className="text-gray-600 mb-2">
+              Drag to reorder certificates. These will appear in the &quot;Certificates &
+              Achievements&quot; section.
+            </p>
           </div>
           <div className="flex gap-4">
             <motion.button
@@ -322,12 +324,18 @@ export default function Certificates() {
                         id="certificate-file"
                       />
                       <label htmlFor="certificate-file" className="cursor-pointer block">
-                        {!previewUrl && !formData.file && <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />}
+                        {!previewUrl && !formData.file && (
+                          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                        )}
 
                         {/* Preview */}
                         {previewUrl ? (
                           <div className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden mb-2">
-                            <img src={previewUrl} alt="Certificate Preview" className="w-full h-full object-contain" />
+                            <img
+                              src={previewUrl}
+                              alt="Certificate Preview"
+                              className="w-full h-full object-contain"
+                            />
                             <button
                               type="button"
                               onClick={(e) => {
@@ -349,9 +357,7 @@ export default function Certificates() {
                           <p className="text-gray-600">Click to upload image or PDF</p>
                         )}
 
-                        <p className="text-sm text-gray-500 mt-1">
-                          Supported: JPG, PNG, PDF
-                        </p>
+                        <p className="text-sm text-gray-500 mt-1">Supported: JPG, PNG, PDF</p>
                       </label>
                     </div>
                   </div>
@@ -423,7 +429,7 @@ export default function Certificates() {
                 <p className="text-sm text-gray-500">
                   {new Date(certificate.date).toLocaleDateString('en-US', {
                     year: 'numeric',
-                    month: 'long'
+                    month: 'long',
                   })}
                 </p>
                 {certificate.description && (
@@ -448,12 +454,12 @@ export default function Certificates() {
           <div className="text-center py-20 bg-white rounded-2xl shadow-lg">
             <Award className="w-20 h-20 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 text-lg">No certificates yet</p>
-            <p className="text-gray-500 mt-2">Click "Add New Certificate" to get started</p>
+            <p className="text-gray-500 mt-2">
+              Click &quot;Add New Certificate&quot; to get started
+            </p>
           </div>
         )}
       </div>
     </motion.div>
   );
 }
-
-

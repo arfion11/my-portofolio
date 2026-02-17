@@ -5,7 +5,7 @@ import { db } from '../services/firebase';
 import { CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Card from '../components/Card';
-import { pageVariants, staggerContainer, staggerItem, buttonVariants } from '../utils/animations';
+import { pageVariants, buttonVariants } from '../utils/animations';
 import profilePhoto from '../assets/images/Gemini_Generated_Image_qv8a9oqv8a9oqv8a.png';
 import heroBanner from '../assets/images/WhatsApp Image 2026-02-01 at 19.36.26.jpeg';
 
@@ -20,14 +20,14 @@ export default function Home() {
   const fetchFeaturedProjects = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'projects'));
-      const allProjects = snapshot.docs.map(doc => ({
+      const allProjects = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
 
       // Filter featured projects and sort by displayOrder
       const featured = allProjects
-        .filter(p => p.featured || p.isSelected)
+        .filter((p) => p.featured || p.isSelected)
         .sort((a, b) => {
           // Sort by displayOrder if exists, otherwise by createdAt
           if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
@@ -40,15 +40,16 @@ export default function Home() {
 
       // Filter other projects (not featured/selected)
       const other = allProjects
-        .filter(p => !p.featured && !p.isSelected)
-        .sort((a, b) => { // Sort by createdAt desc (newest first)
+        .filter((p) => !p.featured && !p.isSelected)
+        .sort((a, b) => {
+          // Sort by createdAt desc (newest first)
           return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
         });
 
       // Combine: 2 Featured + 1 Other
       const displayProjects = [
         ...featured.slice(0, 2),
-        ...(other.length > 0 ? [other[0]] : (featured.length > 2 ? [featured[2]] : []))
+        ...(other.length > 0 ? [other[0]] : featured.length > 2 ? [featured[2]] : []),
       ];
 
       setFeaturedProjects(displayProjects);
@@ -60,11 +61,11 @@ export default function Home() {
   };
 
   const highlights = [
-    "2+ years of experience in QA Engineering",
-    "Expert in manual and automation testing",
-    "Proficient with Cypress, Playwright, and Appium",
-    "Strong background in API and performance testing",
-    "Passionate about delivering quality software"
+    '2+ years of experience in QA Engineering',
+    'Expert in manual and automation testing',
+    'Proficient with Cypress, Playwright, and Appium',
+    'Strong background in API and performance testing',
+    'Passionate about delivering quality software',
   ];
 
   return (
@@ -99,15 +100,15 @@ export default function Home() {
                 linear-gradient(rgba(96, 165, 250, 0.3) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(96, 165, 250, 0.3) 1px, transparent 1px)
               `,
-              backgroundSize: '50px 50px'
+              backgroundSize: '50px 50px',
             }}
             animate={{
-              backgroundPosition: ['0px 0px', '50px 50px']
+              backgroundPosition: ['0px 0px', '50px 50px'],
             }}
             transition={{
               duration: 20,
               repeat: Infinity,
-              ease: "linear"
+              ease: 'linear',
             }}
           />
 
@@ -116,24 +117,24 @@ export default function Home() {
             className="absolute top-20 left-20 w-64 h-64 bg-blue-500/30 rounded-full blur-3xl"
             animate={{
               scale: [1, 1.3, 1],
-              opacity: [0.3, 0.5, 0.3]
+              opacity: [0.3, 0.5, 0.3],
             }}
             transition={{
               duration: 5,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: 'easeInOut',
             }}
           />
           <motion.div
             className="absolute bottom-20 right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
             animate={{
               scale: [1.2, 1, 1.2],
-              opacity: [0.2, 0.4, 0.2]
+              opacity: [0.2, 0.4, 0.2],
             }}
             transition={{
               duration: 7,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: 'easeInOut',
             }}
           />
         </div>
@@ -142,7 +143,6 @@ export default function Home() {
         <div className="relative z-10 h-full flex items-center">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             <div className="max-w-3xl">
-
               {/* Main Title */}
               <motion.h1
                 className="text-5xl md:text-7xl font-bold mb-6 text-white leading-tight"
@@ -150,7 +150,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease: [0.43, 0.13, 0.23, 0.96] }}
               >
-                Hi, I'm Pion.
+                Hi, I&apos;m Pion.
               </motion.h1>
 
               {/* Subtitle */}
@@ -162,7 +162,6 @@ export default function Home() {
               >
                 Turning ideas into meaningful digital experiences.
               </motion.p>
-
             </div>
           </div>
         </div>
@@ -175,7 +174,6 @@ export default function Home() {
       <section className="py-20 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
             {/* Left Side - Photo with Cool Animations */}
             <motion.div
               className="relative"
@@ -194,7 +192,7 @@ export default function Home() {
                 transition={{
                   duration: 8,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
               />
               <motion.div
@@ -206,7 +204,7 @@ export default function Home() {
                 transition={{
                   duration: 8,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
               />
 
@@ -219,7 +217,7 @@ export default function Home() {
                 transition={{
                   duration: 4,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
               >
                 <motion.div
@@ -227,7 +225,7 @@ export default function Home() {
                   whileHover={{
                     scale: 1.05,
                     rotate: 2,
-                    transition: { duration: 0.3 }
+                    transition: { duration: 0.3 },
                   }}
                 >
                   {/* Gradient Border Effect */}
@@ -278,9 +276,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
-                  About Me
-                </h2>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">About Me</h2>
               </motion.div>
 
               <motion.p
@@ -290,9 +286,9 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.3, duration: 0.5 }}
               >
-                Hi! I'm <span className="font-bold text-blue-600">Arfion Rizki Diotama</span>,
-                a passionate QA Engineer dedicated to ensuring software quality through
-                meticulous testing and continuous improvement.
+                Hi! I&apos;m <span className="font-bold text-blue-600">Arfion Rizki Diotama</span>,
+                a passionate QA Engineer dedicated to ensuring software quality through meticulous
+                testing and continuous improvement.
               </motion.p>
 
               <motion.p
@@ -321,7 +317,9 @@ export default function Home() {
                     <div className="transition-transform duration-200 group-hover:scale-110">
                       <CheckCircle2 className="text-blue-600 flex-shrink-0 mt-1" size={24} />
                     </div>
-                    <p className="text-gray-700 text-lg transition-transform duration-200 group-hover:translate-x-1">{highlight}</p>
+                    <p className="text-gray-700 text-lg transition-transform duration-200 group-hover:translate-x-1">
+                      {highlight}
+                    </p>
                   </motion.div>
                 ))}
               </div>
@@ -347,7 +345,6 @@ export default function Home() {
                 </Link>
               </motion.div>
             </motion.div>
-
           </div>
         </div>
       </section>
@@ -370,7 +367,7 @@ export default function Home() {
               <motion.div
                 className="inline-block"
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               >
                 <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full" />
               </motion.div>
@@ -420,6 +417,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-    </motion.div >
+    </motion.div>
   );
 }

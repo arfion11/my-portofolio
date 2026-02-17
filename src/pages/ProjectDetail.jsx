@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Briefcase, GraduationCap, Code2, ExternalLink, Calendar, User } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Briefcase, ExternalLink, Calendar, User } from 'lucide-react';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -13,26 +13,26 @@ export default function ProjectDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
-    fetchProject();
-  }, [id]);
+    const fetchProject = async () => {
+      try {
+        const docRef = doc(db, 'projects', id);
+        const docSnap = await getDoc(docRef);
 
-  const fetchProject = async () => {
-    try {
-      const docRef = doc(db, 'projects', id);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        setProject({ id: docSnap.id, ...docSnap.data() });
-      } else {
+        if (docSnap.exists()) {
+          setProject({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          navigate('/portfolio');
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error);
         navigate('/portfolio');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching project:', error);
-      navigate('/portfolio');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchProject();
+  }, [id, navigate]);
 
   // Function to convert URLs in text to clickable links
   const renderDescriptionWithLinks = (text) => {
@@ -50,20 +50,14 @@ export default function ProjectDetail() {
     return htmlText.replace(/\n/g, '<br>');
   };
 
-
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center">
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+        <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <motion.div
             className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full mx-auto mb-4"
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           />
           <p className="text-gray-600 font-medium">Loading project...</p>
         </motion.div>
@@ -79,9 +73,9 @@ export default function ProjectDetail() {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const itemVariants = {
@@ -89,8 +83,8 @@ export default function ProjectDetail() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: "easeOut" }
-    }
+      transition: { duration: 0.5, ease: 'easeOut' },
+    },
   };
 
   const imageVariants = {
@@ -98,8 +92,8 @@ export default function ProjectDetail() {
     visible: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
+      transition: { duration: 0.6, ease: 'easeOut' },
+    },
   };
 
   return (
@@ -130,7 +124,9 @@ export default function ProjectDetail() {
           >
             Project Detail
           </motion.h1>
-          <p className="text-blue-100/70">Exploring the technical details and results of this project</p>
+          <p className="text-blue-100/70">
+            Exploring the technical details and results of this project
+          </p>
         </div>
       </div>
 
@@ -142,10 +138,7 @@ export default function ProjectDetail() {
           className="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8"
           variants={itemVariants}
         >
-          <motion.div
-            className="relative bg-gray-100"
-            variants={imageVariants}
-          >
+          <motion.div className="relative bg-gray-100" variants={imageVariants}>
             {project.images && project.images.length > 0 ? (
               <motion.img
                 src={project.images[selectedImage]}
@@ -155,7 +148,7 @@ export default function ProjectDetail() {
                 animate={{ scale: 1 }}
                 transition={{ duration: 0.8 }}
                 crossOrigin="anonymous"
-                onError={(e) => {
+                onError={() => {
                   console.error('Image failed to load:', project.images[selectedImage]);
                 }}
               />
@@ -174,12 +167,17 @@ export default function ProjectDetail() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${selectedImage === index
-                      ? 'border-blue-500 shadow-lg scale-105'
-                      : 'border-gray-200 hover:border-blue-300'
-                      }`}
+                    className={`flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
+                      selectedImage === index
+                        ? 'border-blue-500 shadow-lg scale-105'
+                        : 'border-gray-200 hover:border-blue-300'
+                    }`}
                   >
-                    <img src={image} alt={`${project.title} ${index + 1}`} className="w-full h-full object-cover" />
+                    <img
+                      src={image}
+                      alt={`${project.title} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -189,18 +187,12 @@ export default function ProjectDetail() {
           {/* Project Info */}
           <div className="p-8">
             {/* Title */}
-            <motion.h1
-              className="text-4xl font-bold text-gray-800 mb-4"
-              variants={itemVariants}
-            >
+            <motion.h1 className="text-4xl font-bold text-gray-800 mb-4" variants={itemVariants}>
               {project.title}
             </motion.h1>
 
             {/* Meta Info */}
-            <motion.div
-              className="flex flex-wrap gap-6 mb-6"
-              variants={itemVariants}
-            >
+            <motion.div className="flex flex-wrap gap-6 mb-6" variants={itemVariants}>
               {project.role && (
                 <div className="flex items-center gap-2 text-gray-600">
                   <User className="w-5 h-5" />
@@ -219,35 +211,32 @@ export default function ProjectDetail() {
                   <span className="font-medium">
                     {project.projectDate
                       ? new Date(project.projectDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })
                       : new Date(project.createdAt.seconds * 1000).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long'
-                      })
-                    }
+                          year: 'numeric',
+                          month: 'long',
+                        })}
                   </span>
                 </div>
               )}
             </motion.div>
 
             {/* Description */}
-            <motion.div
-              className="prose prose-lg max-w-none"
-              variants={itemVariants}
-            >
+            <motion.div className="prose prose-lg max-w-none" variants={itemVariants}>
               <div
                 className="text-gray-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: renderDescriptionWithLinks(project.description) }}
+                dangerouslySetInnerHTML={{
+                  __html: renderDescriptionWithLinks(project.description),
+                }}
               />
             </motion.div>
           </div>
         </motion.div>
 
         {/* Back to Portfolio Button */}
-
       </div>
     </motion.div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   collection,
@@ -9,12 +9,25 @@ import {
   doc,
   serverTimestamp,
   orderBy,
-  query
+  query,
 } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../services/firebase';
 import { uploadToCloudinary } from '../../services/cloudinary';
-import { Plus, Edit, Trash2, LogOut, X, Upload, MapPin, Rocket, GraduationCap, Briefcase, Heart, Award } from 'lucide-react';
+import {
+  Plus,
+  Edit,
+  Trash2,
+  LogOut,
+  X,
+  Upload,
+  MapPin,
+  Rocket,
+  GraduationCap,
+  Briefcase,
+  Heart,
+  Award,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ImageCropModal from '../../components/ImageCropModal';
 import { blobToFile } from '../../utils/cropUtils';
@@ -37,7 +50,7 @@ export default function Journey() {
     caption: '',
     description: '',
     icon: 'pin',
-    order: 0
+    order: 0,
   });
 
   const iconOptions = [
@@ -46,28 +59,28 @@ export default function Journey() {
     { value: 'graduation', label: 'Graduation', icon: GraduationCap },
     { value: 'briefcase', label: 'Briefcase', icon: Briefcase },
     { value: 'heart', label: 'Heart', icon: Heart },
-    { value: 'award', label: 'Award', icon: Award }
+    { value: 'award', label: 'Award', icon: Award },
   ];
 
   useEffect(() => {
     checkAuth();
     fetchPhotos();
-  }, []);
+  }, [checkAuth]);
 
-  const checkAuth = () => {
+  const checkAuth = useCallback(() => {
     const user = auth.currentUser;
     if (!user) {
       navigate('/admin/login');
     }
-  };
+  }, [navigate]);
 
   const fetchPhotos = async () => {
     try {
       const q = query(collection(db, 'journey'), orderBy('order', 'asc'));
       const snapshot = await getDocs(q);
-      const photosData = snapshot.docs.map(doc => ({
+      const photosData = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setPhotos(photosData);
     } catch (error) {
@@ -119,7 +132,7 @@ export default function Journey() {
         ...formData,
         image: imageUrl,
         order: parseInt(formData.order) || 0,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       if (editingPhoto) {
@@ -127,7 +140,7 @@ export default function Journey() {
       } else {
         await addDoc(collection(db, 'journey'), {
           ...photoData,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
         });
       }
 
@@ -160,7 +173,7 @@ export default function Journey() {
         caption: photo.caption || '',
         description: photo.description || '',
         icon: photo.icon || 'pin',
-        order: photo.order || 0
+        order: photo.order || 0,
       });
       setImagePreview(photo.image || '');
     } else {
@@ -169,7 +182,7 @@ export default function Journey() {
         caption: '',
         description: '',
         icon: 'pin',
-        order: photos.length
+        order: photos.length,
       });
       setImagePreview('');
     }
@@ -249,10 +262,14 @@ export default function Journey() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {photos.map((photo) => {
-              const IconComponent = iconOptions.find(opt => opt.value === photo.icon)?.icon || MapPin;
+              const IconComponent =
+                iconOptions.find((opt) => opt.value === photo.icon)?.icon || MapPin;
 
               return (
-                <div key={photo.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div
+                  key={photo.id}
+                  className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                >
                   {/* Image */}
                   <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
                     {photo.image ? (
@@ -345,9 +362,7 @@ export default function Journey() {
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Photo *
-                  </label>
+                  <label className="block text-gray-700 font-semibold mb-2">Photo *</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-blue-500 transition-colors">
                     {imagePreview ? (
                       <div className="relative">
@@ -392,9 +407,7 @@ export default function Journey() {
 
                 {/* Caption */}
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Caption *
-                  </label>
+                  <label className="block text-gray-700 font-semibold mb-2">Caption *</label>
                   <input
                     type="text"
                     value={formData.caption}
@@ -407,9 +420,7 @@ export default function Journey() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Description
-                  </label>
+                  <label className="block text-gray-700 font-semibold mb-2">Description</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -421,9 +432,7 @@ export default function Journey() {
 
                 {/* Icon Selection */}
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Icon
-                  </label>
+                  <label className="block text-gray-700 font-semibold mb-2">Icon</label>
                   <div className="grid grid-cols-3 gap-3">
                     {iconOptions.map((option) => {
                       const IconComponent = option.icon;
@@ -432,13 +441,18 @@ export default function Journey() {
                           key={option.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, icon: option.value })}
-                          className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-all ${formData.icon === option.value
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                            }`}
+                          className={`p-4 border-2 rounded-lg flex flex-col items-center gap-2 transition-all ${
+                            formData.icon === option.value
+                              ? 'border-blue-600 bg-blue-50'
+                              : 'border-gray-300 hover:border-gray-400'
+                          }`}
                         >
-                          <IconComponent className={`w-6 h-6 ${formData.icon === option.value ? 'text-blue-600' : 'text-gray-600'}`} />
-                          <span className={`text-sm ${formData.icon === option.value ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}>
+                          <IconComponent
+                            className={`w-6 h-6 ${formData.icon === option.value ? 'text-blue-600' : 'text-gray-600'}`}
+                          />
+                          <span
+                            className={`text-sm ${formData.icon === option.value ? 'text-blue-600 font-semibold' : 'text-gray-600'}`}
+                          >
                             {option.label}
                           </span>
                         </button>
@@ -449,9 +463,7 @@ export default function Journey() {
 
                 {/* Order */}
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Display Order
-                  </label>
+                  <label className="block text-gray-700 font-semibold mb-2">Display Order</label>
                   <input
                     type="number"
                     value={formData.order}
@@ -487,4 +499,3 @@ export default function Journey() {
     </div>
   );
 }
-

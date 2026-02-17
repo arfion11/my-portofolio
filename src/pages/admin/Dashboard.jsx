@@ -7,20 +7,19 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  serverTimestamp
+  serverTimestamp,
 } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../services/firebase';
 import { uploadToCloudinary } from '../../services/cloudinary';
-import { Plus, Edit, Trash2, LogOut, X, Mail, Award, Upload, FileText, Heart, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, X, Mail, Heart, GripVertical, Award } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  pageVariants,
   buttonVariants,
   modalVariants,
   backdropVariants,
   staggerContainer,
-  staggerItem
+  staggerItem,
 } from '../../utils/animations';
 import ImageCropModal from '../../components/ImageCropModal';
 import { blobToFile } from '../../utils/cropUtils';
@@ -49,8 +48,6 @@ export default function Dashboard() {
   const [focusedField, setFocusedField] = useState('');
   const navigate = useNavigate();
 
-
-
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -58,7 +55,7 @@ export default function Dashboard() {
     role: '',
     projectDate: '',
     images: [],
-    isSelected: false
+    isSelected: false,
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
@@ -87,15 +84,15 @@ export default function Dashboard() {
   const fetchProjects = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'projects'));
-      const projectsData = snapshot.docs.map(doc => ({
+      const projectsData = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setProjects(projectsData);
 
       // Filter and sort featured projects
       const featured = projectsData
-        .filter(p => p.featured || p.isSelected)
+        .filter((p) => p.featured || p.isSelected)
         .sort((a, b) => {
           // Sort by displayOrder if exists, otherwise by createdAt
           if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
@@ -120,8 +117,8 @@ export default function Dashboard() {
       return;
     }
 
-    const oldIndex = featuredProjects.findIndex(p => p.id === active.id);
-    const newIndex = featuredProjects.findIndex(p => p.id === over.id);
+    const oldIndex = featuredProjects.findIndex((p) => p.id === active.id);
+    const newIndex = featuredProjects.findIndex((p) => p.id === over.id);
 
     const reorderedProjects = arrayMove(featuredProjects, oldIndex, newIndex);
     setFeaturedProjects(reorderedProjects);
@@ -159,22 +156,22 @@ export default function Dashboard() {
 
   const handleCropComplete = (croppedBlob) => {
     const file = blobToFile(croppedBlob, `project-image-${Date.now()}.jpg`);
-    setImageFiles(prev => [...prev, file]);
-    setPreviewUrls(prev => [...prev, URL.createObjectURL(croppedBlob)]);
+    setImageFiles((prev) => [...prev, file]);
+    setPreviewUrls((prev) => [...prev, URL.createObjectURL(croppedBlob)]);
   };
 
   const removeImage = (index) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setPreviewUrls(prev => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => {
       URL.revokeObjectURL(prev[index]);
       return prev.filter((_, i) => i !== index);
     });
   };
 
   const removeExistingImage = (imageUrl) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      images: prev.images.filter(img => img !== imageUrl)
+      images: prev.images.filter((img) => img !== imageUrl),
     }));
   };
 
@@ -209,7 +206,7 @@ export default function Dashboard() {
       const projectData = {
         ...formData,
         images: [...(formData.images || []), ...imageUrls],
-        createdAt: editingProject ? editingProject.createdAt : serverTimestamp()
+        createdAt: editingProject ? editingProject.createdAt : serverTimestamp(),
       };
 
       if (editingProject) {
@@ -230,7 +227,7 @@ export default function Dashboard() {
         role: '',
         projectDate: '',
         images: [],
-        isSelected: false
+        isSelected: false,
       });
       setImageFiles([]);
       setPreviewUrls([]);
@@ -256,7 +253,7 @@ export default function Dashboard() {
       role: project.role,
       projectDate: project.projectDate || '',
       images: project.images || [],
-      isSelected: project.isSelected || false
+      isSelected: project.isSelected || false,
     });
     setImageFiles([]);
     setPreviewUrls([]);
@@ -351,7 +348,7 @@ export default function Dashboard() {
               whileHover={{
                 scale: 1.05,
                 color: '#dc2626',
-                transition: { duration: 0.2 }
+                transition: { duration: 0.2 },
               }}
               whileTap={{ scale: 0.95 }}
             >
@@ -381,7 +378,7 @@ export default function Dashboard() {
                 description: '',
                 role: '',
                 projectDate: '',
-                images: []
+                images: [],
               });
               setImageFiles([]);
               setPreviewUrls([]);
@@ -441,7 +438,7 @@ export default function Dashboard() {
                     {[
                       { name: 'title', label: 'Project Title *', type: 'text', required: true },
                       { name: 'company', label: 'Company / Client', type: 'text', required: false },
-                    ].map((field, index) => (
+                    ].map((field) => (
                       <motion.div key={field.name} variants={staggerItem}>
                         <label className="block text-gray-700 font-semibold mb-2">
                           {field.label}
@@ -449,16 +446,19 @@ export default function Dashboard() {
                         <motion.input
                           type={field.type}
                           value={formData[field.name]}
-                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, [field.name]: e.target.value })
+                          }
                           onFocus={() => setFocusedField(field.name)}
                           onBlur={() => setFocusedField('')}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
                           required={field.required}
                           animate={{
                             scale: focusedField === field.name ? 1.02 : 1,
-                            boxShadow: focusedField === field.name
-                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                              : '0 0 0 0px rgba(59, 130, 246, 0)'
+                            boxShadow:
+                              focusedField === field.name
+                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                : '0 0 0 0px rgba(59, 130, 246, 0)',
                           }}
                           transition={{ duration: 0.2 }}
                         />
@@ -479,16 +479,21 @@ export default function Dashboard() {
                         required
                         animate={{
                           scale: focusedField === 'description' ? 1.02 : 1,
-                          boxShadow: focusedField === 'description'
-                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                            : '0 0 0 0px rgba(59, 130, 246, 0)'
+                          boxShadow:
+                            focusedField === 'description'
+                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                              : '0 0 0 0px rgba(59, 130, 246, 0)',
                         }}
                         transition={{ duration: 0.2 }}
                       />
                     </motion.div>
 
                     {[
-                      { name: 'role', label: 'Your Role as QA', placeholder: 'e.g., Manual Tester, Automation Engineer' },
+                      {
+                        name: 'role',
+                        label: 'Your Role as QA',
+                        placeholder: 'e.g., Manual Tester, Automation Engineer',
+                      },
                     ].map((field) => (
                       <motion.div key={field.name} variants={staggerItem}>
                         <label className="block text-gray-700 font-semibold mb-2">
@@ -497,16 +502,19 @@ export default function Dashboard() {
                         <motion.input
                           type="text"
                           value={formData[field.name]}
-                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, [field.name]: e.target.value })
+                          }
                           onFocus={() => setFocusedField(field.name)}
                           onBlur={() => setFocusedField('')}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
                           placeholder={field.placeholder}
                           animate={{
                             scale: focusedField === field.name ? 1.02 : 1,
-                            boxShadow: focusedField === field.name
-                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                              : '0 0 0 0px rgba(59, 130, 246, 0)'
+                            boxShadow:
+                              focusedField === field.name
+                                ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                                : '0 0 0 0px rgba(59, 130, 246, 0)',
                           }}
                           transition={{ duration: 0.2 }}
                         />
@@ -514,9 +522,7 @@ export default function Dashboard() {
                     ))}
 
                     <motion.div variants={staggerItem}>
-                      <label className="block text-gray-700 font-semibold mb-2">
-                        Project Date
-                      </label>
+                      <label className="block text-gray-700 font-semibold mb-2">Project Date</label>
                       <motion.input
                         type="date"
                         value={formData.projectDate}
@@ -526,15 +532,19 @@ export default function Dashboard() {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg transition-all"
                         animate={{
                           scale: focusedField === 'projectDate' ? 1.02 : 1,
-                          boxShadow: focusedField === 'projectDate'
-                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                            : '0 0 0 0px rgba(59, 130, 246, 0)'
+                          boxShadow:
+                            focusedField === 'projectDate'
+                              ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                              : '0 0 0 0px rgba(59, 130, 246, 0)',
                         }}
                         transition={{ duration: 0.2 }}
                       />
                     </motion.div>
 
-                    <motion.div variants={staggerItem} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <motion.div
+                      variants={staggerItem}
+                      className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200"
+                    >
                       <input
                         type="checkbox"
                         id="isSelected"
@@ -542,7 +552,10 @@ export default function Dashboard() {
                         onChange={(e) => setFormData({ ...formData, isSelected: e.target.checked })}
                         className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
                       />
-                      <label htmlFor="isSelected" className="text-gray-700 font-medium cursor-pointer select-none">
+                      <label
+                        htmlFor="isSelected"
+                        className="text-gray-700 font-medium cursor-pointer select-none"
+                      >
                         Mark as Selected Project (Featured)
                       </label>
                     </motion.div>
@@ -564,26 +577,41 @@ export default function Dashboard() {
                       {/* Image Previews */}
                       <div className="grid grid-cols-3 gap-4 mt-4">
                         {/* Existing Images */}
-                        {formData.images && formData.images.map((img, index) => (
-                          <div key={`existing-${index}`} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                            <img src={img} alt={`Existing ${index}`} className="w-full h-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => removeExistingImage(img)}
-                              className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        {formData.images &&
+                          formData.images.map((img, index) => (
+                            <div
+                              key={`existing-${index}`}
+                              className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden"
                             >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        ))}
+                              <img
+                                src={img}
+                                alt={`Existing ${index}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeExistingImage(img)}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
 
                         {/* New Cropped Images */}
-                        {previewUrls.map((url, index) => (
-                          <div key={`new-${index}`} className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500">
-                            <img src={url} alt={`New ${index}`} className="w-full h-full object-cover" />
+                        {previewUrls.map((url, i) => (
+                          <div
+                            key={`new-${i}`}
+                            className="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-blue-500"
+                          >
+                            <img
+                              src={url}
+                              alt={`New ${i}`}
+                              className="w-full h-full object-cover"
+                            />
                             <button
                               type="button"
-                              onClick={() => removeImage(index)}
+                              onClick={() => removeImage(i)}
                               className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <X size={14} />
@@ -605,20 +633,22 @@ export default function Dashboard() {
                       disabled={uploading}
                       className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400"
                       variants={buttonVariants}
-                      whileHover={!uploading ? "hover" : undefined}
-                      whileTap={!uploading ? "tap" : undefined}
+                      whileHover={!uploading ? 'hover' : undefined}
+                      whileTap={!uploading ? 'tap' : undefined}
                     >
                       {uploading ? (
                         <span className="flex items-center justify-center gap-2">
                           <motion.span
                             className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                             animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                           />
                           Uploading...
                         </span>
+                      ) : editingProject ? (
+                        'Update'
                       ) : (
-                        editingProject ? 'Update' : 'Add Project'
+                        'Add Project'
                       )}
                     </motion.button>
                     <motion.button
@@ -628,7 +658,7 @@ export default function Dashboard() {
                       whileHover={{
                         backgroundColor: '#d1d5db',
                         scale: 1.02,
-                        transition: { duration: 0.2 }
+                        transition: { duration: 0.2 },
                       }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -663,8 +693,12 @@ export default function Dashboard() {
                   <GripVertical className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">Manage Featured Projects Order</h2>
-                  <p className="text-sm text-gray-500">Drag and drop to reorder featured projects</p>
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Manage Featured Projects Order
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Drag and drop to reorder featured projects
+                  </p>
                 </div>
               </div>
               <motion.button
@@ -692,7 +726,7 @@ export default function Dashboard() {
                     onDragEnd={handleDragEnd}
                   >
                     <SortableContext
-                      items={featuredProjects.map(p => p.id)}
+                      items={featuredProjects.map((p) => p.id)}
                       strategy={verticalListSortingStrategy}
                     >
                       {featuredProjects.map((project) => (
@@ -703,7 +737,10 @@ export default function Dashboard() {
 
                   {featuredProjects.length === 0 && (
                     <div className="text-center py-8 text-gray-500">
-                      <p>No featured projects yet. Mark projects as "Selected Project (Featured)" to manage their order here.</p>
+                      <p>
+                        No featured projects yet. Mark projects as &quot;Selected Project
+                        (Featured)&quot; to manage their order here.
+                      </p>
                     </div>
                   )}
                 </motion.div>
@@ -724,7 +761,7 @@ export default function Dashboard() {
               <motion.div
                 className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"
                 animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
               />
               <p className="text-gray-600 mt-4">Loading...</p>
             </motion.div>
@@ -736,7 +773,9 @@ export default function Dashboard() {
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.3 }}
             >
-              <p className="text-gray-600">Belum ada project. Klik "Add New Project" untuk mulai!</p>
+              <p className="text-gray-600">
+                Belum ada project. Klik &quot;Add New Project&quot; untuk mulai!
+              </p>
             </motion.div>
           ) : (
             <motion.div
@@ -769,7 +808,7 @@ export default function Dashboard() {
                   initial="initial"
                   animate="animate"
                 >
-                  {projects.map((project, index) => (
+                  {projects.map((project) => (
                     <motion.tr
                       key={project.id}
                       variants={staggerItem}
@@ -777,7 +816,7 @@ export default function Dashboard() {
                         backgroundColor: '#f9fafb',
                         y: -2,
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                        transition: { duration: 0.2 }
+                        transition: { duration: 0.2 },
                       }}
                       layout
                     >
@@ -788,7 +827,9 @@ export default function Dashboard() {
                         {project.company}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                        {project.projectDate ? new Date(project.projectDate).toLocaleDateString() : '-'}
+                        {project.projectDate
+                          ? new Date(project.projectDate).toLocaleDateString()
+                          : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <motion.button
@@ -797,7 +838,7 @@ export default function Dashboard() {
                           whileHover={{
                             scale: 1.2,
                             color: '#1e40af',
-                            transition: { duration: 0.2 }
+                            transition: { duration: 0.2 },
                           }}
                           whileTap={{ scale: 0.9 }}
                         >
@@ -809,7 +850,7 @@ export default function Dashboard() {
                           whileHover={{
                             scale: 1.2,
                             color: '#991b1b',
-                            transition: { duration: 0.2 }
+                            transition: { duration: 0.2 },
                           }}
                           whileTap={{ scale: 0.9 }}
                         >
@@ -825,9 +866,7 @@ export default function Dashboard() {
         </AnimatePresence>
 
         {/* Certificate Modal */}
-        <AnimatePresence>
-
-        </AnimatePresence>
+        <AnimatePresence></AnimatePresence>
       </div>
     </>
   );
@@ -835,14 +874,9 @@ export default function Dashboard() {
 
 // Sortable Item Component for Drag and Drop
 function SortableItem({ project }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: project.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: project.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),

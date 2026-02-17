@@ -12,7 +12,7 @@ export default function Contact() {
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   });
   const [status, setStatus] = useState('');
   const [focusedField, setFocusedField] = useState('');
@@ -38,9 +38,9 @@ export default function Contact() {
           EMAILJS_CONFIG.SERVICE_ID,
           EMAILJS_CONFIG.TEMPLATE_ID,
           {
-            name: formData.name,      // Sesuai dengan {{name}} di template
-            email: formData.email,    // Sesuai dengan {{email}} di template
-            title: formData.subject,  // Sesuai dengan {{title}} di template
+            name: formData.name, // Sesuai dengan {{name}} di template
+            email: formData.email, // Sesuai dengan {{email}} di template
+            title: formData.subject, // Sesuai dengan {{title}} di template
             message: formData.message, // Sesuai dengan {{message}} di template
           },
           EMAILJS_CONFIG.PUBLIC_KEY
@@ -66,20 +66,50 @@ export default function Contact() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const contactInfo = [
-    { icon: Mail, label: 'Email', value: 'diotama2arfi@gmail.com', color: 'bg-blue-100 text-blue-600' },
-    { icon: Phone, label: 'Phone', value: '+62 812-9495-2500', color: 'bg-green-100 text-green-600' },
-    { icon: MapPin, label: 'Location', value: 'Jakarta, Indonesia', color: 'bg-purple-100 text-purple-600' },
+    {
+      icon: Mail,
+      label: 'Email',
+      value: 'diotama2arfi@gmail.com',
+      color: 'bg-blue-100 text-blue-600',
+    },
+    {
+      icon: Phone,
+      label: 'Phone',
+      value: '+62 812-9495-2500',
+      color: 'bg-green-100 text-green-600',
+    },
+    {
+      icon: MapPin,
+      label: 'Location',
+      value: 'Jakarta, Indonesia',
+      color: 'bg-purple-100 text-purple-600',
+    },
   ];
 
   const socialLinks = [
-    { icon: Linkedin, href: 'https://www.linkedin.com/in/arfionrizkidiotama/', label: 'LinkedIn', color: 'bg-blue-600 hover:bg-blue-700' },
-    { icon: Github, href: 'https://github.com/arfion11', label: 'GitHub', color: 'bg-gray-800 hover:bg-gray-900' },
-    { icon: Mail, href: 'https://mail.google.com/mail/?view=cm&fs=1&to=diotama2arfi@gmail.com', label: 'Email', color: 'bg-red-600 hover:bg-red-700' },
+    {
+      icon: Linkedin,
+      href: 'https://www.linkedin.com/in/arfionrizkidiotama/',
+      label: 'LinkedIn',
+      color: 'bg-blue-600 hover:bg-blue-700',
+    },
+    {
+      icon: Github,
+      href: 'https://github.com/arfion11',
+      label: 'GitHub',
+      color: 'bg-gray-800 hover:bg-gray-900',
+    },
+    {
+      icon: Mail,
+      href: 'https://mail.google.com/mail/?view=cm&fs=1&to=diotama2arfi@gmail.com',
+      label: 'Email',
+      color: 'bg-red-600 hover:bg-red-700',
+    },
   ];
 
   return (
@@ -93,9 +123,7 @@ export default function Contact() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-4xl font-bold text-gray-800 mb-4">Get In Touch</h1>
-          <p className="text-xl text-gray-600">
-            Let's discuss your needs or opportunities
-          </p>
+          <p className="text-xl text-gray-600">Let&apos;s discuss your needs or opportunities</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -118,10 +146,10 @@ export default function Contact() {
                       className="flex items-center gap-4"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + (index * 0.1), duration: 0.4 }}
+                      transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
                       whileHover={{
                         x: 5,
-                        transition: { duration: 0.2 }
+                        transition: { duration: 0.2 },
                       }}
                     >
                       <motion.div
@@ -129,7 +157,7 @@ export default function Contact() {
                         whileHover={{
                           scale: 1.1,
                           rotate: 5,
-                          transition: { duration: 0.2 }
+                          transition: { duration: 0.2 },
                         }}
                       >
                         <Icon size={24} />
@@ -166,15 +194,15 @@ export default function Contact() {
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{
-                        delay: 0.6 + (index * 0.1),
+                        delay: 0.6 + index * 0.1,
                         duration: 0.3,
-                        type: "spring",
-                        stiffness: 300
+                        type: 'spring',
+                        stiffness: 300,
                       }}
                       whileHover={{
                         scale: 1.1,
                         y: -5,
-                        transition: { duration: 0.2 }
+                        transition: { duration: 0.2 },
                       }}
                       whileTap={{ scale: 0.95 }}
                       aria-label={social.label}
@@ -206,7 +234,7 @@ export default function Contact() {
                   exit="exit"
                 >
                   <CheckCircle size={20} />
-                  Message sent successfully! I'll get back to you soon.
+                  Message sent successfully! I&apos;ll get back to you soon.
                 </motion.div>
               )}
               {status === 'error' && (
@@ -230,7 +258,7 @@ export default function Contact() {
                     key={field}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + (index * 0.1), duration: 0.4 }}
+                    transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
                   >
                     <label className="block text-gray-700 font-semibold mb-2 capitalize">
                       {field} *
@@ -244,16 +272,19 @@ export default function Contact() {
                       onBlur={() => setFocusedField('')}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-all"
                       placeholder={
-                        field === 'name' ? 'Your name' :
-                        field === 'email' ? 'your.email@example.com' :
-                        "What's this about?"
+                        field === 'name'
+                          ? 'Your name'
+                          : field === 'email'
+                            ? 'your.email@example.com'
+                            : "What's this about?"
                       }
                       required
                       animate={{
                         scale: focusedField === field ? 1.02 : 1,
-                        boxShadow: focusedField === field
-                          ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                          : '0 0 0 0px rgba(59, 130, 246, 0)'
+                        boxShadow:
+                          focusedField === field
+                            ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                            : '0 0 0 0px rgba(59, 130, 246, 0)',
                       }}
                       transition={{ duration: 0.2 }}
                     />
@@ -265,9 +296,7 @@ export default function Contact() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6, duration: 0.4 }}
                 >
-                  <label className="block text-gray-700 font-semibold mb-2">
-                    Message *
-                  </label>
+                  <label className="block text-gray-700 font-semibold mb-2">Message *</label>
                   <motion.textarea
                     name="message"
                     value={formData.message}
@@ -280,9 +309,10 @@ export default function Contact() {
                     required
                     animate={{
                       scale: focusedField === 'message' ? 1.02 : 1,
-                      boxShadow: focusedField === 'message'
-                        ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                        : '0 0 0 0px rgba(59, 130, 246, 0)'
+                      boxShadow:
+                        focusedField === 'message'
+                          ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                          : '0 0 0 0px rgba(59, 130, 246, 0)',
                     }}
                     transition={{ duration: 0.2 }}
                   />
@@ -296,15 +326,15 @@ export default function Contact() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7, duration: 0.4 }}
                   variants={buttonVariants}
-                  whileHover={status !== 'sending' ? "hover" : undefined}
-                  whileTap={status !== 'sending' ? "tap" : undefined}
+                  whileHover={status !== 'sending' ? 'hover' : undefined}
+                  whileTap={status !== 'sending' ? 'tap' : undefined}
                 >
                   {status === 'sending' ? (
                     <span className="flex items-center justify-center gap-2">
                       <motion.span
                         className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                         animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       />
                       Sending...
                     </span>

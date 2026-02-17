@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db, auth } from '../../services/firebase';
 import { signOut } from 'firebase/auth';
 import { LogOut, Mail, Trash2, CheckCircle, Clock, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { pageVariants, staggerContainer, staggerItem, buttonVariants } from '../../utils/animations';
+import {
+  pageVariants,
+  staggerContainer,
+  staggerItem,
+  buttonVariants,
+} from '../../utils/animations';
 
 export default function Messages() {
   const [messages, setMessages] = useState([]);
@@ -16,21 +21,21 @@ export default function Messages() {
   useEffect(() => {
     checkAuth();
     fetchMessages();
-  }, []);
+  }, [checkAuth]);
 
-  const checkAuth = () => {
+  const checkAuth = useCallback(() => {
     if (!auth.currentUser) {
       navigate('/admin/login');
     }
-  };
+  }, [navigate]);
 
   const fetchMessages = async () => {
     try {
       const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      const messagesData = snapshot.docs.map(doc => ({
+      const messagesData = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setMessages(messagesData);
     } catch (error) {
@@ -52,7 +57,7 @@ export default function Messages() {
   const handleMarkAsRead = async (messageId, currentReadStatus) => {
     try {
       await updateDoc(doc(db, 'messages', messageId), {
-        read: !currentReadStatus
+        read: !currentReadStatus,
       });
       fetchMessages();
     } catch (error) {
@@ -80,11 +85,11 @@ export default function Messages() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   };
 
-  const unreadCount = messages.filter(m => !m.read).length;
+  const unreadCount = messages.filter((m) => !m.read).length;
 
   return (
     <motion.div
@@ -105,7 +110,9 @@ export default function Messages() {
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Messages</h1>
             <p className="text-gray-600 mt-1">
-              {unreadCount > 0 ? `${unreadCount} unread message${unreadCount > 1 ? 's' : ''}` : 'All messages read'}
+              {unreadCount > 0
+                ? `${unreadCount} unread message${unreadCount > 1 ? 's' : ''}`
+                : 'All messages read'}
             </p>
           </div>
           <div className="flex gap-4">
@@ -138,7 +145,7 @@ export default function Messages() {
             <motion.div
               className="inline-block w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full"
               animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             />
           </div>
         ) : messages.length === 0 ? (
@@ -152,12 +159,8 @@ export default function Messages() {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
-            <motion.div
-              variants={staggerContainer}
-              initial="initial"
-              animate="animate"
-            >
-              {messages.map((message, index) => (
+            <motion.div variants={staggerContainer} initial="initial" animate="animate">
+              {messages.map((message) => (
                 <motion.div
                   key={message.id}
                   className={`bg-white rounded-lg shadow-md p-6 cursor-pointer transition-all ${
@@ -166,8 +169,8 @@ export default function Messages() {
                   variants={staggerItem}
                   whileHover={{
                     y: -4,
-                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.1)",
-                    transition: { duration: 0.2 }
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+                    transition: { duration: 0.2 },
                   }}
                   onClick={() => setSelectedMessage(message)}
                 >
@@ -314,4 +317,3 @@ export default function Messages() {
     </motion.div>
   );
 }
-

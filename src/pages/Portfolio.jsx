@@ -2,7 +2,16 @@ import { useEffect, useState, useRef } from 'react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Layers, Award, ChevronLeft, ChevronRight, ArrowRight, X, Calendar, User } from 'lucide-react';
+import {
+  Zap,
+  Layers,
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  X,
+  Calendar,
+} from 'lucide-react';
 import ProjectSlider from '../components/ProjectSlider';
 
 export default function Portfolio() {
@@ -54,18 +63,18 @@ export default function Portfolio() {
       // Fetch projects
       const projectsQuery = query(collection(db, 'projects'), orderBy('createdAt', 'desc'));
       const projectsSnapshot = await getDocs(projectsQuery);
-      const projectsData = projectsSnapshot.docs.map(doc => ({
+      const projectsData = projectsSnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setProjects(projectsData);
 
       // Fetch certificates
       const certsQuery = query(collection(db, 'certificates'), orderBy('createdAt', 'desc'));
       const certsSnapshot = await getDocs(certsQuery);
-      const certsData = certsSnapshot.docs.map(doc => ({
+      const certsData = certsSnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
       setCertificates(certsData);
     } catch (error) {
@@ -77,7 +86,7 @@ export default function Portfolio() {
 
   // Organize projects by category
   const selectedProjects = projects
-    .filter(p => p.featured || p.isSelected)
+    .filter((p) => p.featured || p.isSelected)
     .sort((a, b) => {
       // Sort by displayOrder if exists, otherwise by createdAt
       if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
@@ -89,15 +98,14 @@ export default function Portfolio() {
       return 0;
     })
     .slice(0, 8);
-  const workProjects = projects.filter(p => p.category === 'work').slice(0, 8);
-  const otherProjects = projects.filter(p =>
-    p.category !== 'work' && !p.featured && !p.isSelected
-  ).slice(0, 8);
+
+  const otherProjects = projects
+    .filter((p) => p.category !== 'work' && !p.featured && !p.isSelected)
+    .slice(0, 8);
 
   // If no selected projects, use first 8 projects
-  const displaySelectedProjects = selectedProjects.length > 0
-    ? selectedProjects
-    : projects.slice(0, 8);
+  const displaySelectedProjects =
+    selectedProjects.length > 0 ? selectedProjects : projects.slice(0, 8);
 
   // Scroll functions for certificates carousel
   const scrollCertificates = (direction) => {
@@ -105,7 +113,7 @@ export default function Portfolio() {
       const scrollAmount = 640; // Adjusted for wider cards
       certificatesCarouselRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   };
@@ -166,7 +174,7 @@ export default function Portfolio() {
             <motion.div
               className="relative w-16 h-16 mx-auto"
               animate={{ rotate: 360 }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
             >
               <div className="absolute inset-0 border-4 border-purple-200 rounded-full" />
               <div className="absolute inset-0 border-4 border-purple-600 border-t-transparent rounded-full" />
@@ -184,8 +192,6 @@ export default function Portfolio() {
                 icon={Zap}
               />
             )}
-
-
 
             {/* Other Projects Section */}
             {otherProjects.length > 0 && (
@@ -210,7 +216,7 @@ export default function Portfolio() {
                 {/* Show More Button for Certificates */}
                 {certificates.length > 6 && (
                   <motion.button
-                    onClick={() => window.location.href = '/certificates'}
+                    onClick={() => (window.location.href = '/certificates')}
                     className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-700 font-medium"
                     whileHover={{ scale: 1.05, x: 4 }}
                     whileTap={{ scale: 0.95 }}
@@ -272,13 +278,14 @@ export default function Portfolio() {
               ) : (
                 <div className="text-center py-12 bg-white/60 backdrop-blur-sm rounded-2xl">
                   <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-600">No certificates yet. Add certificates from admin dashboard.</p>
+                  <p className="text-gray-600">
+                    No certificates yet. Add certificates from admin dashboard.
+                  </p>
                 </div>
               )}
             </div>
           </div>
         )}
-
       </div>
 
       {/* Certificate Detail Modal */}
@@ -358,7 +365,7 @@ export default function Portfolio() {
                             {new Date(selectedCertificate.date).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
-                              day: 'numeric'
+                              day: 'numeric',
                             })}
                           </p>
                         </div>
@@ -397,8 +404,6 @@ export default function Portfolio() {
     </div>
   );
 
-
-
   // ... (drag handlers unchanged)
 
   // ... (render)
@@ -412,7 +417,10 @@ function CertificateCard({ certificate, index, onClick }) {
       className="relative flex-shrink-0 w-[600px] h-[400px] rounded-3xl overflow-hidden cursor-pointer group shadow-xl"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ y: -5, shadow: "0 25px 30px -5px rgba(0, 0, 0, 0.15), 0 15px 15px -5px rgba(0, 0, 0, 0.08)" }}
+      whileHover={{
+        y: -5,
+        shadow: '0 25px 30px -5px rgba(0, 0, 0, 0.15), 0 15px 15px -5px rgba(0, 0, 0, 0.08)',
+      }}
       transition={{ delay: index * 0.1, duration: 0.4 }}
     >
       {/* Background Image - Full Cover */}

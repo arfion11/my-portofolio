@@ -38,18 +38,47 @@ const useCounter = (end, duration = 2, shouldStart = false) => {
 
 export default function About() {
   const statsRef = useRef(null);
-  const isStatsInView = useInView(statsRef, { once: true, margin: "-100px" });
+  const isStatsInView = useInView(statsRef, { once: true, margin: '-100px' });
 
   const skills = {
-    manual: ['Test Planning', 'Test Case Design', 'Exploratory Testing', 'Functional Testing', 'Regression Testing', 'Smoke Testing', 'UAT', 'SIT'],
+    manual: [
+      'Test Planning',
+      'Test Case Design',
+      'Exploratory Testing',
+      'Functional Testing',
+      'Regression Testing',
+      'Smoke Testing',
+      'UAT',
+      'SIT',
+    ],
     automation: ['Cypress', 'Playwright', 'Appium', 'Selenium'],
     api: ['Postman', 'Swagger', 'REST API Testing', 'API Automation'],
     performance: ['Locust', 'API Performance Testing', 'Grafana'],
-    tools: ['Jira', 'Notion', 'Trello', 'Confluence', 'Git', 'GitHub', 'Figma', 'Bitbucket', 'Jenkins'],
-    programming: ['JavaScript', 'TypeScript', 'Kotlin', 'Python', 'Java', 'PHP', 'C#', 'HTML', 'CSS'],
+    tools: [
+      'Jira',
+      'Notion',
+      'Trello',
+      'Confluence',
+      'Git',
+      'GitHub',
+      'Figma',
+      'Bitbucket',
+      'Jenkins',
+    ],
+    programming: [
+      'JavaScript',
+      'TypeScript',
+      'Kotlin',
+      'Python',
+      'Java',
+      'PHP',
+      'C#',
+      'HTML',
+      'CSS',
+    ],
     frameworks: ['Laravel', 'Node.js', 'Android', 'Flutter', 'Unity'],
     database: ['MySQL', 'MongoDB', 'PostgreSQL'],
-    methodology: ['Agile Scrum', 'Waterfall', 'SDLC', 'STLC']
+    methodology: ['Agile Scrum', 'Waterfall', 'SDLC', 'STLC'],
   };
 
   const skillCategories = [
@@ -95,12 +124,12 @@ export default function About() {
               transition={{
                 duration: 0.6,
                 ease: [0.43, 0.13, 0.23, 0.96],
-                delay: 0.2
+                delay: 0.2,
               }}
               whileHover={{
                 scale: 1.05,
-                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
-                transition: { duration: 0.3 }
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+                transition: { duration: 0.3 },
               }}
             >
               <img
@@ -140,8 +169,8 @@ export default function About() {
                 transition={{ delay: 0.6, duration: 0.5 }}
               >
                 Passionate QA Engineer with 2+ years of experience in manual and automation testing.
-                Committed to delivering high-quality software through structured testing methodologies
-                and continuous improvement.
+                Committed to delivering high-quality software through structured testing
+                methodologies and continuous improvement.
               </motion.p>
               <motion.a
                 href="/cv.pdf"
@@ -167,7 +196,7 @@ export default function About() {
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
         >
           {stats.map((stat, index) => {
@@ -184,8 +213,8 @@ export default function About() {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
                 whileHover={{
                   y: -8,
-                  boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-                  transition: { duration: 0.3 }
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+                  transition: { duration: 0.3 },
                 }}
               >
                 <motion.div
@@ -195,8 +224,8 @@ export default function About() {
                   viewport={{ once: true }}
                   transition={{
                     delay: index * 0.1 + 0.2,
-                    type: "spring",
-                    stiffness: 200
+                    type: 'spring',
+                    stiffness: 200,
                   }}
                 >
                   <div className={`${stat.color} bg-opacity-10 p-4 rounded-full`}>
@@ -211,7 +240,8 @@ export default function About() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 + 0.3, duration: 0.3 }}
                 >
-                  {counterValue}{stat.suffix}
+                  {counterValue}
+                  {stat.suffix}
                 </motion.div>
 
                 <p className="text-gray-600 font-medium">{stat.label}</p>
@@ -226,7 +256,7 @@ export default function About() {
           variants={staggerContainer}
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: '-100px' }}
         >
           {skillCategories.map((category, catIndex) => (
             <motion.div
@@ -235,8 +265,8 @@ export default function About() {
               variants={staggerItem}
               whileHover={{
                 y: -8,
-                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
-                transition: { duration: 0.3 }
+                boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
+                transition: { duration: 0.3 },
               }}
             >
               <motion.h2
@@ -257,12 +287,12 @@ export default function About() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{
-                      delay: catIndex * 0.1 + (index * 0.05),
-                      duration: 0.3
+                      delay: catIndex * 0.1 + index * 0.05,
+                      duration: 0.3,
                     }}
                     whileHover={{
                       x: 5,
-                      transition: { duration: 0.2 }
+                      transition: { duration: 0.2 },
                     }}
                   >
                     <motion.span
@@ -271,10 +301,10 @@ export default function About() {
                       whileInView={{ scale: 1 }}
                       viewport={{ once: true }}
                       transition={{
-                        delay: catIndex * 0.1 + (index * 0.05) + 0.1,
+                        delay: catIndex * 0.1 + index * 0.05 + 0.1,
                         duration: 0.3,
-                        type: "spring",
-                        stiffness: 300
+                        type: 'spring',
+                        stiffness: 300,
                       }}
                     />
                     {skill}
@@ -318,7 +348,7 @@ export default function About() {
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
                 />
                 <div className="w-0.5 h-full bg-blue-200 mt-2"></div>
               </div>
@@ -332,13 +362,31 @@ export default function About() {
                 <h3 className="text-xl font-bold text-gray-800">QA Engineer</h3>
                 <p className="text-blue-600 mb-2">NOICE, Jakarta, Indonesia • Aug 2025 - Present</p>
                 <ul className="text-gray-600 space-y-1 list-disc list-inside">
-                  <li>Conducted manual and automated testing for Noice Web and Noice Studio using Playwright, integrating CI/CD pipelines</li>
-                  <li>Implemented mobile automation testing using Appium, reducing manual effort by 40%</li>
-                  <li>Executed comprehensive manual testing for Noice TV platform (smoke, sanity, regression testing)</li>
-                  <li>Performed load testing using Locust to evaluate system performance and scalability</li>
-                  <li>Monitored application performance metrics through Grafana dashboards, reducing downtime by 25%</li>
+                  <li>
+                    Conducted manual and automated testing for Noice Web and Noice Studio using
+                    Playwright, integrating CI/CD pipelines
+                  </li>
+                  <li>
+                    Implemented mobile automation testing using Appium, reducing manual effort by
+                    40%
+                  </li>
+                  <li>
+                    Executed comprehensive manual testing for Noice TV platform (smoke, sanity,
+                    regression testing)
+                  </li>
+                  <li>
+                    Performed load testing using Locust to evaluate system performance and
+                    scalability
+                  </li>
+                  <li>
+                    Monitored application performance metrics through Grafana dashboards, reducing
+                    downtime by 25%
+                  </li>
                   <li>Performed API testing using Postman and Swagger</li>
-                  <li>Executed functional, regression, smoke, and exploratory testing, contributing to 95% on-time release rate</li>
+                  <li>
+                    Executed functional, regression, smoke, and exploratory testing, contributing to
+                    95% on-time release rate
+                  </li>
                 </ul>
               </motion.div>
               {/* Company Logo - Clickable */}
@@ -355,11 +403,7 @@ export default function About() {
                 whileTap={{ scale: 0.95 }}
               >
                 <div className="w-24 h-24 bg-white rounded-lg shadow-md p-3 flex items-center justify-center overflow-hidden transition-shadow duration-300 group-hover:shadow-xl">
-                  <img
-                    src={noiceLogo}
-                    alt="NOICE Logo"
-                    className="w-full h-full object-contain"
-                  />
+                  <img src={noiceLogo} alt="NOICE Logo" className="w-full h-full object-contain" />
                 </div>
               </motion.a>
             </motion.div>
@@ -378,7 +422,7 @@ export default function About() {
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.4, type: "spring", stiffness: 300 }}
+                  transition={{ delay: 0.4, type: 'spring', stiffness: 300 }}
                 />
               </div>
               <motion.div
@@ -389,13 +433,30 @@ export default function About() {
                 transition={{ delay: 0.5, duration: 0.5 }}
               >
                 <h3 className="text-xl font-bold text-gray-800">QA Engineer Intern</h3>
-                <p className="text-blue-600 mb-2">TransTRACK, Bandung, Indonesia • Aug 2024 - Jun 2025</p>
+                <p className="text-blue-600 mb-2">
+                  TransTRACK, Bandung, Indonesia • Aug 2024 - Jun 2025
+                </p>
                 <ul className="text-gray-600 space-y-1 list-disc list-inside">
-                  <li>Designed and executed test cases for web and mobile applications (functional, regression, exploratory testing) with 95% coverage</li>
-                  <li>Implemented automation testing using Cypress and integrated CI/CD pipelines, reducing manual testing time by 40%</li>
-                  <li>Validated 30+ API endpoints using Postman and Newman with integrated automation, reducing API error rate by 25%</li>
-                  <li>Led 30+ sprint review sessions and UAT sessions in Agile environment with 93% satisfaction rate</li>
-                  <li>Documented test scenarios and bug reports using project management tools, improving team traceability by 80%</li>
+                  <li>
+                    Designed and executed test cases for web and mobile applications (functional,
+                    regression, exploratory testing) with 95% coverage
+                  </li>
+                  <li>
+                    Implemented automation testing using Cypress and integrated CI/CD pipelines,
+                    reducing manual testing time by 40%
+                  </li>
+                  <li>
+                    Validated 30+ API endpoints using Postman and Newman with integrated automation,
+                    reducing API error rate by 25%
+                  </li>
+                  <li>
+                    Led 30+ sprint review sessions and UAT sessions in Agile environment with 93%
+                    satisfaction rate
+                  </li>
+                  <li>
+                    Documented test scenarios and bug reports using project management tools,
+                    improving team traceability by 80%
+                  </li>
                 </ul>
               </motion.div>
               {/* Company Logo - Clickable */}
@@ -456,7 +517,7 @@ export default function About() {
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
                 />
               </div>
               <motion.div
@@ -466,10 +527,13 @@ export default function About() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.3, duration: 0.5 }}
               >
-                <h3 className="text-xl font-bold text-gray-800">Associate's Degree in Informatics Engineering</h3>
-                <p className="text-green-600 mb-2">Telkom University, Bandung, Indonesia • 2022 - 2025</p>
-                <ul className="text-gray-600 space-y-1 list-disc list-inside">
-                </ul>
+                <h3 className="text-xl font-bold text-gray-800">
+                  Associate&apos;s Degree in Informatics Engineering
+                </h3>
+                <p className="text-green-600 mb-2">
+                  Telkom University, Bandung, Indonesia • 2022 - 2025
+                </p>
+                <ul className="text-gray-600 space-y-1 list-disc list-inside"></ul>
               </motion.div>
 
               {/* Telkom University Logo */}
