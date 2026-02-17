@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs, limit, query } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -19,13 +19,39 @@ export default function Home() {
 
   const fetchFeaturedProjects = async () => {
     try {
-      const q = query(collection(db, 'projects'), limit(3));
-      const snapshot = await getDocs(q);
-      const projects = snapshot.docs.map(doc => ({
+      const snapshot = await getDocs(collection(db, 'projects'));
+      const allProjects = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      setFeaturedProjects(projects);
+
+      // Filter featured projects and sort by displayOrder
+      const featured = allProjects
+        .filter(p => p.featured || p.isSelected)
+        .sort((a, b) => {
+          // Sort by displayOrder if exists, otherwise by createdAt
+          if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+            return a.displayOrder - b.displayOrder;
+          }
+          if (a.displayOrder !== undefined) return -1;
+          if (b.displayOrder !== undefined) return 1;
+          return 0;
+        });
+
+      // Filter other projects (not featured/selected)
+      const other = allProjects
+        .filter(p => !p.featured && !p.isSelected)
+        .sort((a, b) => { // Sort by createdAt desc (newest first)
+          return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+        });
+
+      // Combine: 2 Featured + 1 Other
+      const displayProjects = [
+        ...featured.slice(0, 2),
+        ...(other.length > 0 ? [other[0]] : (featured.length > 2 ? [featured[2]] : []))
+      ];
+
+      setFeaturedProjects(displayProjects);
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {

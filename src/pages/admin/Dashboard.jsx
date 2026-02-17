@@ -12,7 +12,7 @@ import {
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../config/firebase';
 import { uploadToCloudinary } from '../../config/cloudinary';
-import { Plus, Edit, Trash2, LogOut, X, Mail, Award, Upload, FileText, Heart } from 'lucide-react';
+import { Plus, Edit, Trash2, LogOut, X, Mail, Award, Upload, FileText, Heart, GripVertical } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   pageVariants,
@@ -24,6 +24,22 @@ import {
 } from '../../utils/animations';
 import ImageCropModal from '../../components/ImageCropModal';
 import { blobToFile } from '../../utils/cropUtils';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
@@ -52,6 +68,18 @@ export default function Dashboard() {
   const [showCropModal, setShowCropModal] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState(null);
 
+  // Featured projects reordering state
+  const [showFeaturedSection, setShowFeaturedSection] = useState(true);
+  const [featuredProjects, setFeaturedProjects] = useState([]);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -64,10 +92,54 @@ export default function Dashboard() {
         ...doc.data()
       }));
       setProjects(projectsData);
+
+      // Filter and sort featured projects
+      const featured = projectsData
+        .filter(p => p.featured || p.isSelected)
+        .sort((a, b) => {
+          // Sort by displayOrder if exists, otherwise by createdAt
+          if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+            return a.displayOrder - b.displayOrder;
+          }
+          if (a.displayOrder !== undefined) return -1;
+          if (b.displayOrder !== undefined) return 1;
+          return 0;
+        });
+      setFeaturedProjects(featured);
     } catch (error) {
       console.error('Error fetching projects:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = featuredProjects.findIndex(p => p.id === active.id);
+    const newIndex = featuredProjects.findIndex(p => p.id === over.id);
+
+    const reorderedProjects = arrayMove(featuredProjects, oldIndex, newIndex);
+    setFeaturedProjects(reorderedProjects);
+
+    // Update displayOrder in Firestore
+    try {
+      const updatePromises = reorderedProjects.map((project, index) =>
+        updateDoc(doc(db, 'projects', project.id), { displayOrder: index })
+      );
+      await Promise.all(updatePromises);
+
+      // Refresh all projects to update the main list
+      fetchProjects();
+    } catch (error) {
+      console.error('Error updating project order:', error);
+      alert('Failed to update project order. Please try again.');
+      // Revert on error
+      fetchProjects();
     }
   };
 
@@ -577,6 +649,69 @@ export default function Dashboard() {
           onCropComplete={handleCropComplete}
         />
 
+        {/* Featured Projects Reordering Section */}
+        {featuredProjects.length > 0 && (
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-100">
+                  <GripVertical className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">Manage Featured Projects Order</h2>
+                  <p className="text-sm text-gray-500">Drag and drop to reorder featured projects</p>
+                </div>
+              </div>
+              <motion.button
+                onClick={() => setShowFeaturedSection(!showFeaturedSection)}
+                className="text-gray-600 hover:text-gray-800 font-medium text-sm"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {showFeaturedSection ? 'Hide' : 'Show'}
+              </motion.button>
+            </div>
+
+            <AnimatePresence>
+              {showFeaturedSection && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-gray-50 rounded-lg p-6"
+                >
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={featuredProjects.map(p => p.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {featuredProjects.map((project) => (
+                        <SortableItem key={project.id} project={project} />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+
+                  {featuredProjects.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No featured projects yet. Mark projects as "Selected Project (Featured)" to manage their order here.</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
         {/* Projects Table */}
         <AnimatePresence mode="wait">
           {loading ? (
@@ -695,5 +830,58 @@ export default function Dashboard() {
         </AnimatePresence>
       </div>
     </>
+  );
+}
+
+// Sortable Item Component for Drag and Drop
+function SortableItem({ project }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: project.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <motion.div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white rounded-lg shadow-md p-4 mb-3 flex items-center gap-4 cursor-move hover:shadow-lg transition-shadow"
+      whileHover={{ scale: 1.01 }}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-100 rounded"
+      >
+        <GripVertical className="w-5 h-5 text-gray-400" />
+      </div>
+
+      <div className="flex-1 flex items-center gap-4">
+        {project.images && project.images.length > 0 && (
+          <img
+            src={project.images[0]}
+            alt={project.title}
+            className="w-16 h-16 object-cover rounded-lg"
+          />
+        )}
+        <div className="flex-1">
+          <h4 className="font-semibold text-gray-900">{project.title}</h4>
+          <p className="text-sm text-gray-500">{project.company}</p>
+        </div>
+      </div>
+
+      <div className="text-sm text-gray-400">
+        {project.projectDate ? new Date(project.projectDate).toLocaleDateString() : '-'}
+      </div>
+    </motion.div>
   );
 }

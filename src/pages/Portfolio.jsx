@@ -48,7 +48,19 @@ export default function Portfolio() {
   };
 
   // Organize projects by category
-  const selectedProjects = projects.filter(p => p.featured || p.isSelected).slice(0, 8);
+  const selectedProjects = projects
+    .filter(p => p.featured || p.isSelected)
+    .sort((a, b) => {
+      // Sort by displayOrder if exists, otherwise by createdAt
+      if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+        return a.displayOrder - b.displayOrder;
+      }
+      if (a.displayOrder !== undefined) return -1;
+      if (b.displayOrder !== undefined) return 1;
+      // Fallback to createdAt descending
+      return 0;
+    })
+    .slice(0, 8);
   const workProjects = projects.filter(p => p.category === 'work').slice(0, 8);
   const otherProjects = projects.filter(p =>
     p.category !== 'work' && !p.featured && !p.isSelected
