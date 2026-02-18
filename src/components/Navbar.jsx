@@ -24,12 +24,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (isOpen) setIsOpen(false);
-  }, [location, isOpen]);
-
   return (
     <motion.nav
       className={`bg-white sticky top-0 z-[100] transition-all duration-300 w-full ${
@@ -147,7 +141,7 @@ export default function Navbar() {
               {menuItems.map((item, index) => {
                 const isActive = location.pathname === item.path;
                 return (
-                  <Link key={item.path} to={item.path}>
+                  <Link key={item.path} to={item.path} onClick={() => setIsOpen(false)}>
                     <motion.div
                       className={`py-3 px-4 rounded-lg font-medium ${
                         isActive ? 'bg-blue-50 text-primary' : 'text-gray-700 hover:bg-gray-50'
