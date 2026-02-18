@@ -6,6 +6,7 @@ import telkomLogo from '../assets/images/Telkom University Logo.png';
 import noiceLogo from '../assets/images/Noice.png';
 import transtrackLogo from '../assets/images/Trans Track Logo.jpg';
 import { staggerContainer, staggerItem, buttonVariants } from '../utils/animations';
+import skillIcons from '../utils/skillIcons';
 
 // Counter animation hook
 const useCounter = (end, duration = 2, shouldStart = false) => {
@@ -53,7 +54,7 @@ export default function About() {
     ],
     automation: ['Cypress', 'Playwright', 'Appium', 'Selenium'],
     api: ['Postman', 'Swagger', 'REST API Testing', 'API Automation'],
-    performance: ['Locust', 'API Performance Testing', 'Grafana'],
+    performance: ['Locust', 'Grafana', 'API Performance Testing'],
     tools: [
       'Jira',
       'Notion',
@@ -295,18 +296,27 @@ export default function About() {
                       transition: { duration: 0.2 },
                     }}
                   >
-                    <motion.span
-                      className={`w-2 h-2 ${category.color} rounded-full`}
-                      initial={{ scale: 0 }}
-                      whileInView={{ scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{
-                        delay: catIndex * 0.1 + index * 0.05 + 0.1,
-                        duration: 0.3,
-                        type: 'spring',
-                        stiffness: 300,
-                      }}
-                    />
+                    {skillIcons[skill] ? (
+                      <img
+                        src={skillIcons[skill]}
+                        alt={skill}
+                        className="skill-icon"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <motion.span
+                        className={`w-2 h-2 ${category.color} rounded-full flex-shrink-0`}
+                        initial={{ scale: 0 }}
+                        whileInView={{ scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{
+                          delay: catIndex * 0.1 + index * 0.05 + 0.1,
+                          duration: 0.3,
+                          type: 'spring',
+                          stiffness: 300,
+                        }}
+                      />
+                    )}
                     {skill}
                   </motion.li>
                 ))}
